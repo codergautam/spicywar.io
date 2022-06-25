@@ -74,21 +74,21 @@ export default class Player extends Phaser.GameObjects.Container {
    this.gun.x = Math.cos(this.square.rotation) * this.bodySize/2;
    this.gun.y = Math.sin(this.square.rotation) * this.bodySize/2;
 
-   if(this.id == (this.scene as GameScene).socket.id) {
-    var controller = (this.scene as GameScene).controller;
-    if(controller.left) {
-      this.x -= tickDiff * 0.2 * this.speed;
-    }
-    if(controller.right) {
-      this.x += tickDiff * 0.2 * this.speed;
-    }
-    if(controller.up) {
-      this.y -= tickDiff * 0.2 * this.speed;
-    }
-    if(controller.down) {
-      this.y += tickDiff * 0.2* this.speed;
-    }
-    this.lastUpdate = Date.now();
-   }
+  //  if(this.id == (this.scene as GameScene).socket.id) {
+  //   var controller = (this.scene as GameScene).controller;
+  //   if(controller.left) {
+  //     this.x -= tickDiff * 0.2 * this.speed;
+  //   }
+  //   if(controller.right) {
+  //     this.x += tickDiff * 0.2 * this.speed;
+  //   }
+  //   if(controller.up) {
+  //     this.y -= tickDiff * 0.2 * this.speed;
+  //   }
+  //   if(controller.down) {
+  //     this.y += tickDiff * 0.2* this.speed;
+  //   }
+  //   this.lastUpdate = Date.now();
+  //  }
   }
 }

@@ -17,7 +17,7 @@ class TitleScene extends Phaser.Scene {
     this.nameBox = this.add.dom(0,0).createFromCache("namebox");
     this.background = this.add.image(0, 0, "title").setOrigin(0).setScrollFactor(0, 0).setScale(2);
 
-    this.text = this.add.text(this.canvas.width / 2, 0, "Waterwar.io", {
+    this.text = this.add.text(this.canvas.width / 2, 0, "Spicywar.io", {
       fontSize: "64px",
       color: "#000000",
     }).setOrigin(0.5);
