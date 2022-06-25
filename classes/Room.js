@@ -147,9 +147,11 @@ class Room {
     this.bullets = this.bullets.filter((bullet) => {
       for (var player of Array.from(this.players.values())) {
         if(bullet.collidingPlayer(player)) {
+          if(bullet.team != player.team) {
           player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * 5;
           player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * 5;
           player.hit = true;
+          }
           ioinstance.to(this.id).emit("removeBullet", bullet.id);
           return false;
         }

@@ -25,6 +25,7 @@ class OpenScene extends Phaser.Scene {
       this.load.image("title", "/assets/images/bg.jpeg");
       
       this.load.html("namebox", "/assets/html/name.html");
+      this.load.image("dragon", "/assets/images/dragon.png");
 
         this.scale.fullscreenTarget = document.getElementById("game");
         console.timeEnd("load");
