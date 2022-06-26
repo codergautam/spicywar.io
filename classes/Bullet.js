@@ -22,7 +22,7 @@ class Bullet {
     this.roomId = player.roomId;
     this.id = idgen();
 
-    this.length = 10;
+    this.length = 5;
     io.getio().to(this.roomId).emit("addBullet", this.getSendObject());
   }
   tick(tickDiff) {

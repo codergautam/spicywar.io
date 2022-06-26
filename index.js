@@ -63,11 +63,11 @@ setInterval(() => {
   roomlist.tickAll();
   tps++;
   if(Date.now() - secondStart > 1000) {
-    console.log("tps: " + tps);
+    // console.log("tps: " + tps);
     tps = 0;
     secondStart = Date.now();
   }
-}, 1000/20);
+}, 1000/30);
 
 server.listen(process.env.PORT || 3000, () => {
   console.log("server started");

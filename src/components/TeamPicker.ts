@@ -7,7 +7,7 @@ export default class ClassPicker extends Phaser.GameObjects.Container {
     super(scene as Scene);
 
 var gameScene = this.scene as GameScene;
-this.rect1 = new TeamBox(gameScene, gameScene.canvas.width/2, gameScene.canvas.height/2, "red");
+this.rect1 = new TeamBox(gameScene, gameScene.canvas.width/4, gameScene.canvas.height/4, "red");
 this.add(this.rect1);
 this.scene.add.existing(this);
 this.scene.cameras.main.ignore(this);

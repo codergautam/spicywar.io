@@ -106,6 +106,8 @@ class Room {
       player.down = down;
     }
   }
+  getSpiceMeter(id) {
+  }
   tick() {
     var tickDiff = Date.now() - this.lastTick;
     this.lastTick = Date.now();

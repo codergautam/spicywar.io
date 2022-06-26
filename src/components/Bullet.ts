@@ -25,7 +25,7 @@ export default class Bullet extends Phaser.GameObjects.Container {
     }
 
 
-    this.bullet = new Phaser.GameObjects.Ellipse(scene, 0, 0, 20, 20, 0x00FFFF).setOrigin(0.5);
+    this.bullet = new Phaser.GameObjects.Ellipse(scene, 0, 0, 10, 10, 0x00FFFF).setOrigin(0.5);
     this.bullet.setRotation(data.angle+(Math.PI/2));
     this.lastRecievedData = Date.now();
     this.add(this.bullet);
