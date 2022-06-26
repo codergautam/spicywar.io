@@ -22,12 +22,17 @@ app.use("/assets", express.static(__dirname+"/assets"));
 roomlist.setRoom(new Room())
 
 io.on("connection", async (socket) => {
-  socket.on("go", (name) => {
+  socket.on("go", (name, team) => {
     if(!name || typeof name != "string") return;
     name = name.trim();
     if(name.length == 0) return socket.disconnect();
+
+    if(!team || typeof team != "string") team = "red";
+    if(team != "red" && team != "blue") team = "red";
+
     name = name.substring(0,16);
     var player = new Player(name, socket.id, socket);
+    player.team = team;
     roomlist.getAllRooms()[0].addPlayer(player);
   });
   socket.on("controller", (controller) => {

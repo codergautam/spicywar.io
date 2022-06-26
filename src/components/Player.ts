@@ -27,8 +27,8 @@ export default class Player extends Phaser.GameObjects.Container {
 
     this.team = team;
     // alert(size)/
-    this.square = new Phaser.GameObjects.Rectangle(scene, 0, 0, this.bodySize, this.bodySize, team == "red" ? 0x013220: 0x0000FF).setOrigin(0.5);
-    this.gun = new Phaser.GameObjects.Rectangle(scene, 0, 0, this.bodySize/2, this.bodySize/2, team == "red" ? 0xff0000 : 0x00FFFF).setOrigin(0.5);
+    this.square = new Phaser.GameObjects.Rectangle(scene, 0, 0, this.bodySize, this.bodySize, team == "red" ? 0xFF0000: 0x0000FF).setOrigin(0.5);
+    this.gun = new Phaser.GameObjects.Rectangle(scene, 0, 0, this.bodySize/2, this.bodySize/2, team == "red" ? 0xffcccb : 0x00FFFF).setOrigin(0.5);
     this.nameTag = new Phaser.GameObjects.Text(scene, 0, -1 * this.square.displayHeight, name, {
       fontSize: "20px",
       color: team == "red" ? "#ff0000" : "#00FFFF",

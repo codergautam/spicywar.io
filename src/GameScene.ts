@@ -42,11 +42,7 @@ class GameScene extends Phaser.Scene {
     
     }
     preload() {
-      this.loadingText = this.add.text(
-        this.canvas.width / 2,
-        this.canvas.height / 2,
-        "Connecting...",
-      ).setOrigin(0.5);
+
       this.ready = false;
       this.players = new Map();
       this.bullets = new Map();
@@ -54,14 +50,39 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-      this.socket = io();
-      this.socket.emit("go", this.name);
 
-      this.map = new GameMap(this);
+
+    
 
       this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
 
       this.teamPicker = new TeamPicker(this);
+      this.cameras.main.ignore(this.teamPicker);
+
+      var team = "red";
+
+      this.teamPicker.rect1.rect.on("pointerdown", () => {
+        team = "red";
+        this.teamPicker.visible = false;
+        start();
+      });
+      this.teamPicker.rect2.rect.on("pointerdown", () => {
+        team = "blue";
+        this.teamPicker.visible = false;
+        start();
+
+      });
+
+       var start = () => {
+        this.loadingText = this.add.text(
+          this.canvas.width / 2,
+          this.canvas.height / 2,
+          "Connecting...",
+        ).setOrigin(0.5);
+      this.socket = io();
+      this.socket.emit("go", this.name, team); 
+
+      this.map = new GameMap(this);
 
      const playerJoined = (data: FirstPlayerData) =>{
         this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
@@ -265,6 +286,32 @@ class GameScene extends Phaser.Scene {
       });
     }, 2000);
 
+  }
+  const resize = () =>{
+    console.log("resize");
+    if(this.teamPicker && this.teamPicker.visible) {
+      this.teamPicker.resize();
+      this.teamPicker.rect1.rect.on("pointerdown", () => {
+        team = "red";
+        this.teamPicker.visible = false;
+        start();
+      });
+      this.teamPicker.rect2.rect.on("pointerdown", () => {
+        team = "blue";
+        this.teamPicker.visible = false;
+        start();
+
+      });
+    }
+  }
+  var doit: string | number | NodeJS.Timeout;
+
+  window.addEventListener("resize", function() {
+    clearTimeout(doit);
+    doit = setTimeout(resize, 100);
+  });
+
+  resize();
   }
   update(time: number, delta: number): void {
    Array.from(this.players.values()).forEach(player => player.updateObject());
