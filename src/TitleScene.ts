@@ -35,7 +35,7 @@ class TitleScene extends Phaser.Scene {
 
     const resize = () => { 
 
-      this.game.scale.resize(this.canvas.width, this.canvas.height);
+      // this.game.scale.resize(this.canvas.width, this.canvas.height);
 
       try {
         const cameraWidth = this.cameras.main.width;
@@ -62,7 +62,7 @@ class TitleScene extends Phaser.Scene {
     resize();
   }
   update(time: number, delta: number): void {
-      this.text.setFontSize(Math.min(this.canvas.width/12, this.canvas.height/5));
+       this.text.setFontSize(Math.min(this.canvas.width/12, this.canvas.height/5));
   }
 }
 

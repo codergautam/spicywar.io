@@ -29,6 +29,12 @@ class OpenScene extends Phaser.Scene {
 
       this.load.image("redPlayer", "/assets/images/redPlayer.png");
       this.load.image("bluePlayer", "/assets/images/bluePlayer.png");
+      
+      this.load.image("home", "/assets/images/home.png");
+      this.load.image("again", "/assets/images/again.jpeg");
+
+      this.load.plugin('rexbbcodetextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexbbcodetextplugin.min.js', true);
+
 
 
         this.scale.fullscreenTarget = document.getElementById("game");

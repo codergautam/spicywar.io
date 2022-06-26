@@ -108,6 +108,29 @@ class Room {
   }
   getSpiceMeter(id) {
   }
+  checkCollisions(player, reason) {
+    var inisland = this.islands.some((island) => {
+      if(island.isIn(player.pos)) {
+        return true;
+      } else return false;
+    });
+    if(!inisland) {
+      var isinbridge = this.bridges.some((bridge) => {
+        if(bridge.isIn(player)) {
+          return true;
+        } else return false;
+      });
+      if(!isinbridge) {
+      player.socket.emit("youDied", {reason: "drown", who: reason.tick ? null : reason.who.name, survivedTime: Date.now() - player.spawnTime, peppers: player.peppers, shotDragons: player.shotDragons});
+      player.socket.to(this.id).emit("playerLeft", player.id);
+      if(!reason.tick && this.players.has(reason.who.id)) {
+        this.players.get(reason.who.id).shotDragons++;
+        this.players.get(reason.who.id).socket.emit("shotDragon", {how: "drown", who: player.name, id: player.id});
+      }
+      this.players.delete(player.id);
+      }
+    }
+  }
   tick() {
     var tickDiff = Date.now() - this.lastTick;
     this.lastTick = Date.now();
@@ -119,23 +142,8 @@ class Room {
       if(player.hit) player.hit = false;
 
       //make sure player is on island
-    var inisland = this.islands.some((island) => {
-        if(island.isIn(player.pos)) {
-          return true;
-        } else return false;
-      });
-      if(!inisland) {
-        var isinbridge = this.bridges.some((bridge) => {
-          if(bridge.isIn(player)) {
-            return true;
-          } else return false;
-        });
-        if(!isinbridge) {
-        player.socket.emit("youDied", {reason: "drown"});
-        ioinstance.to(this.id).emit("playerLeft", player.id);
-        this.players.delete(player.id);
-        }
-      }
+      this.checkCollisions(player, {tick: true, who: ""});
+
     });
     this.bullets.forEach((bullet) => {
       bullet.tick(tickDiff);
@@ -153,6 +161,7 @@ class Room {
           player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * 5;
           player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * 5;
           player.hit = true;
+          this.checkCollisions(player, {tick: false, who: {name: bullet.ownerName, id: bullet.owner}});
           }
           ioinstance.to(this.id).emit("removeBullet", bullet.id);
           return false;

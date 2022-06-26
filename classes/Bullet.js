@@ -18,6 +18,7 @@ class Bullet {
     this.pos.y += (Math.sin(this.angle) * this.speed * (50+offset));
     this.createdAt = Date.now();
     this.owner = player.id;
+    this.ownerName = player.name;
     this.team = player.team;
     this.roomId = player.roomId;
     this.id = idgen();

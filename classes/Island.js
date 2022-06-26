@@ -84,7 +84,8 @@ module.exports = class Island {
 
     } else if(this.captureState == 2) {
     console.log("island captured");
-      this.capturedPercentage -= (diff / 50) * players.length;
+      if(team != this.capturingBy) this.capturedPercentage -= (diff / 50) * players.length;
+      else this.capturedPercentage += (diff / 50) * players.length;
       this.capturedBy = "none";
       if(this.capturedPercentage <= 0) {
         this.capturedPercentage = 0;

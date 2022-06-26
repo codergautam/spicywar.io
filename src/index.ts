@@ -13,7 +13,8 @@ var config = {
         autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     scale: {
-        mode:Phaser.Scale.RESIZE,
+        mode: Phaser.Scale.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
     }
     
 };
@@ -21,7 +22,9 @@ var mobile = window.matchMedia("(pointer: coarse)").matches;
 var game = new Phaser.Game(config);
 
 var openScene = new OpenScene();
-var gameScene = new GameScene();
+var gameScene = new GameScene((reason: string) => {
+
+});
 
 
 //alert(lastAd)

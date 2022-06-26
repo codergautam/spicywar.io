@@ -15,6 +15,9 @@ class Player {
     };
     this.speed = 1;
     this.down = false;
+    this.spawnTime = Date.now();
+    this.peppers = 1000;
+    this.shotDragons = 0;
 
     this.bodySize = 50;
 

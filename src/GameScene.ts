@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import { io, Socket } from "socket.io-client";
 import Bullet from "./components/Bullet";
+import DeathScreen from "./components/DeathScreen";
 import Island from "./components/Island";
 import GameMap from "./components/Map";
 import Player from "./components/Player";
@@ -36,9 +37,13 @@ class GameScene extends Phaser.Scene {
   islands: Island[];
   uiCam: Phaser.Cameras.Scene2D.Camera;
   teamPicker: TeamPicker;
+  deathScreen: DeathScreen;
+  callback: Function;
 
-    constructor() {
+    constructor(callback: Function) {
       super("game");
+
+      this.callback = callback;
     
     }
     preload() {
@@ -52,7 +57,7 @@ class GameScene extends Phaser.Scene {
     create() {
 
 
-    
+      // this.deathScreen = new DeathScreen(this);
 
       this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
 
@@ -95,8 +100,10 @@ class GameScene extends Phaser.Scene {
       });
       this.socket.on("playerLeft", (id: string) => {
         if(this.players.has(id)){
+          if(this.players.get(id)) {
           this.players.get(id).destroy();
           this.players.delete(id);
+          }
         }
       });
       this.socket.on("players", (data: FirstPlayerData[]) => {
@@ -114,8 +121,10 @@ class GameScene extends Phaser.Scene {
       this.socket.on("removeBullet", (id: string) => {
         if(this.bullets.has(id)) {
           setTimeout(() => {
-          this.bullets.get(id).end();
+            if(this.bullets.get(id)) {
+          this.bullets.get(id).destroy();
           this.bullets.delete(id);
+            }
           }, (1000/20)*2);
         }
       });
@@ -127,8 +136,10 @@ class GameScene extends Phaser.Scene {
         for (const bullet of this.bullets.values()) {
           if(!data.find(b => b.id === bullet.id)) {
             setTimeout(() => {
-              bullet.end();
+              if(bullet) {
+              bullet.destroy();
               this.bullets.delete(bullet.id);
+              }
             }, (1000/20)*2);
           }
         }
@@ -176,11 +187,54 @@ class GameScene extends Phaser.Scene {
       //   this.add.circle(corners[3].x, corners[3].y, 10, 0x00FF00).setOrigin(0.5);
       // })
 
-      this.socket.on("youDied", () => {
-        this.players.get(this.socket.id).destroy();
+      this.socket.on("youDied", ({reason, who, survivedTime, shotDragons, peppers}) => {
+       var me = this.players.get(this.socket.id);
+       this.tweens.add({
+          targets: me,
+          alpha: 0,
+          
+          duration: 500,
+          onComplete: () => {
+            console.log("youDied", reason, who, survivedTime, shotDragons, peppers);
+            this.deathScreen = new DeathScreen(this, reason, who, survivedTime, shotDragons, peppers);
+            me.destroy();
         this.players.delete(this.socket.id);
+
         
+          },
+        });     
       })
+      this.socket.on("shotDragon", ({who, id, reason}) => {
+        console.log("shotDragon", who, id, reason);
+        var txt = `[b][color=#e82a1f]Shot [/color][color=#0000FF]${who}[/color][/b]`;
+        const convert = (num, val, newNum) => (newNum * val) / num;
+        var fontsize = convert(1366, 64, this.canvas.width);
+					var text = (this.add as any).rexBBCodeText(this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
+
+						const completeCallback = (text) => {
+							this.tweens.add({
+								targets: text,
+								alpha: 0,
+								y: this.canvas.height,
+								onComplete: ()=>{
+									text.destroy();
+								},
+								ease: "Power2",
+								duration: 250
+							});
+						};
+
+					this.tweens.add({
+						targets: text,
+						alpha: 1,
+						y: this.canvas.height - this.canvas.height / 6,
+						completeDelay: 250,
+						duration: 750,
+						onComplete: ()=>completeCallback(text),
+						ease: "Bounce"
+					  });
+					this.cameras.main.ignore(text);
+      });
       var keys = (this.input.keyboard.addKeys({
         up: 'up',
         down: 'down',
@@ -303,6 +357,10 @@ class GameScene extends Phaser.Scene {
 
       });
     }
+
+    if(this.deathScreen && this.deathScreen.visible) {
+      this.deathScreen.resize();
+    }
   }
   var doit: string | number | NodeJS.Timeout;
 
@@ -319,7 +377,11 @@ class GameScene extends Phaser.Scene {
 
   if(!this.fpsCounter) this.fpsCounter = this.add.text(10, 10, "FPS: 0", {color: "white"}).setDepth(0);
   this.cameras.main.ignore(this.fpsCounter);
+  try {
   this.fpsCounter.setText("FPS: " + this.game.loop.actualFps.toFixed(2));
+  } catch(e) {
+    console.log(e);
+  }
   }
 }
 
