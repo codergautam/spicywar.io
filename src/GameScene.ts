@@ -2,6 +2,7 @@ import Phaser from "phaser";
 import { io, Socket } from "socket.io-client";
 import Bullet from "./components/Bullet";
 import DeathScreen from "./components/DeathScreen";
+import HealthBar from "./components/HealthBar";
 import Island from "./components/Island";
 import GameMap from "./components/Map";
 import Player from "./components/Player";
@@ -39,6 +40,7 @@ class GameScene extends Phaser.Scene {
   teamPicker: TeamPicker;
   deathScreen: DeathScreen;
   callback: Function;
+  dominationBar: HealthBar;
 
     constructor(callback: Function) {
       super("game");
@@ -88,6 +90,10 @@ class GameScene extends Phaser.Scene {
       this.socket.emit("go", this.name, team); 
 
       this.map = new GameMap(this);
+      this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /100, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
+      this.dominationBar.draw();
+      this.cameras.main.ignore(this.dominationBar);
+      this.dominationBar.bar.x -= this.dominationBar.width / 2;
 
      const playerJoined = (data: FirstPlayerData) =>{
         this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
@@ -95,7 +101,7 @@ class GameScene extends Phaser.Scene {
       }
 
       this.socket.on("playerJoined", (data: FirstPlayerData) => {
-        console.log("playerJoined", data);
+        // console.log("playerJoined", data);
         playerJoined(data);
       });
       this.socket.on("playerLeft", (id: string) => {
@@ -145,7 +151,7 @@ class GameScene extends Phaser.Scene {
         }
       });
       this.socket.on("islands", (data: IslandData[]) => {
-        console.log("islands", data);
+        // console.log("islands", data);
         this.islands = data.map(d => new Island(this, d).setDepth(1));
       });
 
@@ -156,12 +162,12 @@ class GameScene extends Phaser.Scene {
         });
       });
       this.socket.on("islandCaptured", (id: number, team: string) => {
-        console.log("islandCaptured", id, team);
+        // console.log("islandCaptured", id, team);
         this.islands.find(i => i.id === id).setTeam(team);
         
       });
       this.socket.on("islandCapturing", (id: number, team: string, percent: number) => {
-        console.log("islandCapturing", id, team, percent);
+        // console.log("islandCapturing", id, team, percent);
         this.islands.find(i => i.id === id).setPercent(percent, team);
 
       })
@@ -195,7 +201,7 @@ class GameScene extends Phaser.Scene {
           
           duration: 500,
           onComplete: () => {
-            console.log("youDied", reason, who, survivedTime, shotDragons, peppers);
+            // console.log("youDied", reason, who, survivedTime, shotDragons, peppers);
             this.deathScreen = new DeathScreen(this, reason, who, survivedTime, shotDragons, peppers);
             me.destroy();
         this.players.delete(this.socket.id);
@@ -205,7 +211,7 @@ class GameScene extends Phaser.Scene {
         });     
       })
       this.socket.on("shotDragon", ({who, id, reason}) => {
-        console.log("shotDragon", who, id, reason);
+        // console.log("shotDragon", who, id, reason);
         var txt = `[b][color=#e82a1f]Shot [/color][color=#0000FF]${who}[/color][/b]`;
         const convert = (num, val, newNum) => (newNum * val) / num;
         var fontsize = convert(1366, 64, this.canvas.width);
@@ -336,13 +342,13 @@ class GameScene extends Phaser.Scene {
     setInterval(() => {
       var start = Date.now();
       this.socket.emit( 'ping', function clientCallback() {
-        console.log( 'Websocket RTT: ' + (Date.now() - start) + ' ms' );
+        // console.log( 'Websocket RTT: ' + (Date.now() - start) + ' ms' );
       });
     }, 2000);
 
   }
   const resize = () =>{
-    console.log("resize");
+    // console.log("resize");
     if(this.teamPicker && this.teamPicker.visible) {
       this.teamPicker.resize();
       this.teamPicker.rect1.rect.on("pointerdown", () => {
@@ -375,13 +381,33 @@ class GameScene extends Phaser.Scene {
    Array.from(this.players.values()).forEach(player => player.updateObject());
    Array.from(this.bullets.values()).forEach(bullet => bullet.updateObject());
 
-  if(!this.fpsCounter) this.fpsCounter = this.add.text(10, 10, "FPS: 0", {color: "white"}).setDepth(0);
-  this.cameras.main.ignore(this.fpsCounter);
-  try {
-  this.fpsCounter.setText("FPS: " + this.game.loop.actualFps.toFixed(2));
-  } catch(e) {
-    console.log(e);
-  }
+   if(this.dominationBar && this.dominationBar.visible) {
+    var totalDomination = {
+      red: 0,
+      blue: 0,
+      none: 0
+    }
+    var i = 0;
+      this.islands.forEach(island => {
+        if(island.x == 0 && island.y == 0) return console.log("fuc")
+        var d = island.getDomination();
+
+        totalDomination.red += d.red;
+        totalDomination.blue += d.blue;
+        totalDomination.none += d.none;
+
+        i++;
+      });
+      // console.log(totalDomination);
+
+      totalDomination.red = (totalDomination.red*100) / (i );
+      totalDomination.blue = (totalDomination.blue*100) / (i );
+      totalDomination.none = (totalDomination.none*100) / (i );
+      // console.log(totalDomination);
+      this.dominationBar.setHealth(totalDomination.red, totalDomination.blue);
+
+
+    }
   }
 }
 

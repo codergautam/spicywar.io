@@ -15,7 +15,7 @@ export default class Island extends Phaser.GameObjects.Container {
     this.capturingCircle = new Phaser.GameObjects.Ellipse(scene, 0, 0, data.size, data.size, 0x00FFFF).setOrigin(0.5).setVisible(false).setDepth(1);
     this.id = data.id;
 
-    if(this.capturedBy == "red") console.log(this.id + " is captured by red");
+    // if(this.capturedBy == "red") console.log(this.id + " is captured by red");
     this.island = new Phaser.GameObjects.Ellipse(scene, 0, 0, data.size, data.size, data.capturedBy == "none" ? 0x838579: data.capturedBy == "red" ? 0xFF0000 : 0x0000FF).setOrigin(0.5).setDepth(1);
     
     if(data.capturedPercentage < 100) {
@@ -27,7 +27,20 @@ export default class Island extends Phaser.GameObjects.Container {
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
   }
-
+  getDomination() {
+    var d = {
+      red: 0,
+      blue: 0,
+      none: 0
+    }
+    if(this.capturingCircle && this.capturingCircle.visible) {
+      d[this.capturingCircle.fillColor == 0xFF0000 ? "red" : "blue"] = this.capturingCircle.scaleX;
+      d.none = 1 - d.red - d.blue;
+    } else {
+      d[this.capturedBy] = 1;
+    }
+    return d;
+  }
   setTeam(team: string) {
     this.capturingCircle.setVisible(false);
     this.island.setFillStyle(team == "red" ? 0xFF0000 : team == "none" ? 0x838579 : 0x0000FF);

@@ -62,7 +62,7 @@ module.exports = class Island {
       this.captureState = 1;
       this.capturedPercentage = 0;
       this.capturingBy = players[0].team;
-      console.log(this.capturingBy+ " is capturing island");
+      // console.log(this.capturingBy+ " is capturing island");
     } else if(this.captureState == 1 && this.capturingBy == team) {
       this.capturedPercentage += (diff / 50) * players.length;
 
@@ -83,7 +83,7 @@ module.exports = class Island {
       io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
 
     } else if(this.captureState == 2) {
-    console.log("island captured");
+    // console.log("island captured");
       if(team != this.capturingBy) this.capturedPercentage -= (diff / 50) * players.length;
       else this.capturedPercentage += (diff / 50) * players.length;
       this.capturedBy = "none";
@@ -95,6 +95,24 @@ module.exports = class Island {
       io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
     }
 
+  }
+  getDomination() {
+    var domination = {
+      red: 0,
+      blue: 0,
+      none: 0
+    }
+    // if(this.captureState == 0) domination.none+=100;
+    if(this.captureState == 1 || this.capturingBy != this.capturedBy) {
+      if(this.capturingBy == "red") domination.red+=this.capturedPercentage;
+      else if(this.capturingBy == "blue") domination.blue+=this.capturedPercentage;
+
+      domination.none+=100-this.capturedPercentage;
+    } else if(this.captureState == 2) {
+      if(this.capturedBy == "red") domination.red+=100;
+      else domination.blue+=100;
+    }
+    return domination;
   }
  isIn(pos) {
       return intersect.pointCircle(pos.x, pos.y, this.pos.x, this.pos.y, this.size/2); 

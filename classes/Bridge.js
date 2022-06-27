@@ -9,7 +9,7 @@ module.exports = class Bridge {
     // calculate angle
     this.angle = Math.atan2(island2.pos.y - island1.pos.y, island2.pos.x - island1.pos.x)+Math.PI/2;
     //to degrees
-    console.log( this.angle * 180 / Math.PI);
+    // console.log( this.angle * 180 / Math.PI)
   }
   getSendObject() {
     return {

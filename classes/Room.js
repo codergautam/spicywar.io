@@ -106,6 +106,31 @@ class Room {
       player.down = down;
     }
   }
+  getDomination() {
+    var totalDomination = {
+      red: 0,
+      blue: 0,
+      none: 0
+    }
+    var cnt = 0;
+    this.islands.filter((i) => i.canBeCaptured).forEach((island) => {
+      cnt++;
+      var i = island.getDomination();
+      totalDomination.red += i.red;
+      totalDomination.blue += i.blue;
+      totalDomination.none += i.none;
+    });
+    totalDomination.red /= cnt;
+    totalDomination.blue /= cnt;
+    totalDomination.none /= cnt;
+
+    //round
+    totalDomination.red = Math.round(totalDomination.red);
+    totalDomination.blue = Math.round(totalDomination.blue);
+    totalDomination.none = Math.round(totalDomination.none);
+
+    return totalDomination;
+  }
   getSpiceMeter(id) {
   }
   checkCollisions(player, reason) {
@@ -121,7 +146,7 @@ class Room {
         } else return false;
       });
       if(!isinbridge) {
-        if(Date.now() - player.lastHit <= 1000 && this.players.has(player.whoLastHit)) {
+        if(Date.now() - player.lastHit <= 2000 && this.players.has(player.whoLastHit)) {
           var lastHitPlayer = this.players.get(player.whoLastHit);
           reason.tick = false;
           reason.who = {id: lastHitPlayer.id, name: lastHitPlayer.name};
