@@ -134,6 +134,18 @@ class Room {
   getSpiceMeter(id) {
   }
   checkCollisions(player, reason) {
+    if(player.queuedForDeath &&Date.now() >= player.queuedForDeath) {
+
+
+      player.socket.emit("youDied", {reason: "drown", who: reason.tick ? null : reason.who.name, survivedTime: Date.now() - player.spawnTime, peppers: player.peppers, shotDragons: player.shotDragons});
+      player.socket.to(this.id).emit("playerLeft", player.id);
+      if(!reason.tick && this.players.has(reason.who.id)) {
+        this.players.get(reason.who.id).shotDragons++;
+        this.players.get(reason.who.id).socket.emit("shotDragon", {how: "drown", who: player.name, id: player.id});
+      }
+      this.players.delete(player.id);
+    }
+
     var inisland = this.islands.some((island) => {
       if(island.isIn(player.pos)) {
         return true;
@@ -153,18 +165,6 @@ class Room {
         }
 
       if(!player.queuedForDeath)  player.queuedForDeath = Date.now() + 200;
-
-      if(Date.now() >= player.queuedForDeath) {
-
-
-      player.socket.emit("youDied", {reason: "drown", who: reason.tick ? null : reason.who.name, survivedTime: Date.now() - player.spawnTime, peppers: player.peppers, shotDragons: player.shotDragons});
-      player.socket.to(this.id).emit("playerLeft", player.id);
-      if(!reason.tick && this.players.has(reason.who.id)) {
-        this.players.get(reason.who.id).shotDragons++;
-        this.players.get(reason.who.id).socket.emit("shotDragon", {how: "drown", who: player.name, id: player.id});
-      }
-      this.players.delete(player.id);
-    }
       }
     }
   }

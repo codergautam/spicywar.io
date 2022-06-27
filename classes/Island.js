@@ -91,6 +91,10 @@ module.exports = class Island {
         this.capturedPercentage = 0;
         this.captureState = 0;
       }
+      if(this.capturedPercentage >= 100) {
+        this.capturedBy = team;
+        this.captureState = 2;
+      }
       io.getio().to(room.id).emit("islandCaptured", this.id, this.capturedBy);
       io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
     }
