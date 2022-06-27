@@ -97,7 +97,7 @@ class GameScene extends Phaser.Scene {
 
      const playerJoined = (data: FirstPlayerData) =>{
         this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
-        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id), false, 0.2, 0.2);
+        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id));
       }
 
       this.socket.on("playerJoined", (data: FirstPlayerData) => {
