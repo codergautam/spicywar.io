@@ -18,6 +18,15 @@ class Player {
     this.spawnTime = Date.now();
     this.peppers = 1000;
     this.shotDragons = 0;
+    this.lastHit = Date.now();
+    this.whoLastHit = null;
+    this.healAmount = 0.005;
+
+    this.queuedForDeath = false;
+
+    this.health = 100;
+    this.maxHealth = 100;
+    this.damage = 5;
 
     this.bodySize = 50;
 
@@ -70,6 +79,7 @@ class Player {
       id: this.id,
       pos: this.pos,
       lookAngle: this.lookAngle,
+      health: this.health,
     };
   }
   getCorners(extraDiff = 1) {
@@ -124,6 +134,7 @@ class Player {
 
   tick(tickDiff) {
     //move
+    if(this.queuedForDeath) return;
     if(this.controller.left) {
       this.pos.x -= tickDiff * 0.2 * this.speed;
     }
@@ -135,6 +146,13 @@ class Player {
     }
     if(this.controller.down) {
       this.pos.y += tickDiff * 0.2* this.speed;
+    }
+
+    if(this.health < this.maxHealth) {
+      if(Date.now() - this.lastHit > 5000) {
+        //33 because 1000 / 30 (tick speed)
+        this.health += this.maxHealth * this.healAmount * (tickDiff / 33);
+      }
     }
 
     var corners = this.getCorners(0.5);

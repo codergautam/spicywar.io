@@ -121,6 +121,17 @@ class Room {
         } else return false;
       });
       if(!isinbridge) {
+        if(Date.now() - player.lastHit <= 1000 && this.players.has(player.whoLastHit)) {
+          var lastHitPlayer = this.players.get(player.whoLastHit);
+          reason.tick = false;
+          reason.who = {id: lastHitPlayer.id, name: lastHitPlayer.name};
+        }
+
+      if(!player.queuedForDeath)  player.queuedForDeath = Date.now() + 200;
+
+      if(Date.now() >= player.queuedForDeath) {
+
+
       player.socket.emit("youDied", {reason: "drown", who: reason.tick ? null : reason.who.name, survivedTime: Date.now() - player.spawnTime, peppers: player.peppers, shotDragons: player.shotDragons});
       player.socket.to(this.id).emit("playerLeft", player.id);
       if(!reason.tick && this.players.has(reason.who.id)) {
@@ -128,6 +139,7 @@ class Room {
         this.players.get(reason.who.id).socket.emit("shotDragon", {how: "drown", who: player.name, id: player.id});
       }
       this.players.delete(player.id);
+    }
       }
     }
   }
@@ -160,6 +172,18 @@ class Room {
           if(bullet.team != player.team) {
           player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * 5;
           player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * 5;
+          player.health -= bullet.damage;
+          player.lastHit = Date.now();
+          player.whoLastHit = bullet.owner;
+          if(player.health <= 0) {
+            player.socket.emit("youDied", {reason: "burnt", who: bullet.ownerName, survivedTime: Date.now() - player.spawnTime, peppers: player.peppers, shotDragons: player.shotDragons});
+            player.socket.to(this.id).emit("playerLeft", player.id);
+            if(this.players.has(bullet.owner)) {
+              this.players.get(bullet.owner).shotDragons++;
+              this.players.get(bullet.owner).socket.emit("shotDragon", {how: "burnt", who: player.name, id: player.id});
+            }
+          }
+
           player.hit = true;
           this.checkCollisions(player, {tick: false, who: {name: bullet.ownerName, id: bullet.owner}});
           }

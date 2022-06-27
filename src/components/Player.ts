@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import GameScene from "../GameScene";
 import { PlayerData } from "../helpers/Packets";
+import HealthBar from "./HealthBar";
 export default class Player extends Phaser.GameObjects.Container {
   square: Phaser.GameObjects.Rectangle;
   gun: Phaser.GameObjects.Rectangle;
@@ -13,6 +14,7 @@ export default class Player extends Phaser.GameObjects.Container {
   speed: number;
   team: string;
   nameTag: Phaser.GameObjects.Text;
+  healthBar: HealthBar;
   constructor(scene: Phaser.Scene, x: number, y: number, id: string, name: string, team: string, speed: number = 1, size: number = 50) {
     super(scene);
     this.x = x;
@@ -34,11 +36,19 @@ export default class Player extends Phaser.GameObjects.Container {
       color: team == "red" ? "#ff0000" : "#00FFFF",
       align: "center"
     }).setDepth(5).setOrigin(0.5);
+   if(this.id == (this.scene as GameScene).socket.id) this.healthBar = new HealthBar(scene, 0, -0.5* this.square.displayHeight, 75, 10, false).setDepth(99);
+   else this.healthBar = new HealthBar(scene, 0, -0.75* this.square.displayHeight, 75, 10, false).setDepth(99);
+
+   this.healthBar.x -= this.healthBar.displayWidth/4;
+
+    this.healthBar.setHealth(100);
+
 
     this.toAngle =this.square.rotation;
 
     this.add(this.square);
     this.add(this.gun);
+    this.add(this.healthBar);
    if(this.id != (this.scene as GameScene).socket.id) this.add(this.nameTag);
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
@@ -54,6 +64,8 @@ export default class Player extends Phaser.GameObjects.Container {
       repeat: 0,
       yoyo: false,
     });
+
+   if(data.health) this.healthBar.setLerpValue(data.health);
   
 
     this.lastTick = Date.now();
@@ -73,6 +85,8 @@ export default class Player extends Phaser.GameObjects.Container {
    this.gun.setRotation(this.square.rotation);
    this.gun.x = Math.cos(this.square.rotation) * this.bodySize/2;
    this.gun.y = Math.sin(this.square.rotation) * this.bodySize/2;
+
+   this.healthBar.updateContainer();
 
   //  if(this.id == (this.scene as GameScene).socket.id) {
   //   var controller = (this.scene as GameScene).controller;

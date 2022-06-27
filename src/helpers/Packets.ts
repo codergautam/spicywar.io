@@ -3,7 +3,9 @@ interface Data {
   pos: {x: number, y: number};
 }
 interface PlayerData extends Data {
+  health: number;
   lookAngle: number;
+  maxHealth: number;
 }
 interface FirstPlayerData extends PlayerData {
   name: string;
