@@ -135,7 +135,11 @@ class Room {
   }
   checkCollisions(player, reason) {
     if(player.queuedForDeath &&Date.now() >= player.queuedForDeath) {
-
+      if(Date.now() - player.lastHit <= 2000 && this.players.has(player.whoLastHit)) {
+        var lastHitPlayer = this.players.get(player.whoLastHit);
+        reason.tick = false;
+        reason.who = {id: lastHitPlayer.id, name: lastHitPlayer.name};
+      }
 
       player.socket.emit("youDied", {reason: "drown", who: reason.tick ? null : reason.who.name, survivedTime: Date.now() - player.spawnTime, peppers: player.peppers, shotDragons: player.shotDragons});
       player.socket.to(this.id).emit("playerLeft", player.id);
@@ -158,11 +162,6 @@ class Room {
         } else return false;
       });
       if(!isinbridge) {
-        if(Date.now() - player.lastHit <= 2000 && this.players.has(player.whoLastHit)) {
-          var lastHitPlayer = this.players.get(player.whoLastHit);
-          reason.tick = false;
-          reason.who = {id: lastHitPlayer.id, name: lastHitPlayer.name};
-        }
 
       if(!player.queuedForDeath)  player.queuedForDeath = Date.now() + 200;
       }
@@ -178,6 +177,12 @@ class Room {
       ioinstance.to(this.id).emit("playerUpdate", player.getSendObject(), {hit: player.hit});
       if(player.hit) player.hit = false;
 
+      var atleastinoneisland = this.islands.some((island) => island.capturedBy == player.team && island.isIn(player.pos));
+      if(!atleastinoneisland) {
+        player.speedMultiplier = 1;
+      } else {
+        player.speedMultiplier = 1.5;
+      }
       //make sure player is on island
       this.checkCollisions(player, {tick: true, who: ""});
 
@@ -207,6 +212,7 @@ class Room {
               this.players.get(bullet.owner).shotDragons++;
               this.players.get(bullet.owner).socket.emit("shotDragon", {how: "burnt", who: player.name, id: player.id});
             }
+            this.players.delete(player.id);
           }
 
           player.hit = true;

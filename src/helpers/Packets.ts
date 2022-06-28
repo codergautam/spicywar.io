@@ -6,6 +6,7 @@ interface PlayerData extends Data {
   health: number;
   lookAngle: number;
   maxHealth: number;
+  peppers: number;
 }
 interface FirstPlayerData extends PlayerData {
   name: string;
@@ -32,6 +33,5 @@ interface BridgeData {
   pos: {x: number, y: number},
   corners: {x: number, y: number}[],
 };
-
 
 export { Data, BridgeData, IslandData, BulletData, PlayerData, FirstPlayerData };

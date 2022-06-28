@@ -41,6 +41,10 @@ class GameScene extends Phaser.Scene {
   deathScreen: DeathScreen;
   callback: Function;
   dominationBar: HealthBar;
+  killCount: any;
+  dominationText: Phaser.GameObjects.Text;
+  team: string;
+  cirle: Phaser.GameObjects.Arc;
 
     constructor(callback: Function) {
       super("game");
@@ -59,6 +63,7 @@ class GameScene extends Phaser.Scene {
     create() {
 
 
+
       // this.deathScreen = new DeathScreen(this);
 
       this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
@@ -67,6 +72,7 @@ class GameScene extends Phaser.Scene {
       this.cameras.main.ignore(this.teamPicker);
 
       var team = "red";
+      this.team = "none";
 
       this.teamPicker.rect1.rect.on("pointerdown", () => {
         team = "red";
@@ -80,6 +86,8 @@ class GameScene extends Phaser.Scene {
 
       });
 
+      
+
        var start = () => {
         this.loadingText = this.add.text(
           this.canvas.width / 2,
@@ -88,16 +96,37 @@ class GameScene extends Phaser.Scene {
         ).setOrigin(0.5);
       this.socket = io();
       this.socket.emit("go", this.name, team); 
+      this.team = `${team}`;
+
+      this.killCount = (this.add as any).rexBBCodeText(15, 10, "Stabs: 0", {
+        fontFamily: "Georgia, \"Goudy Bookletter 1911\", Times, serif",
+      }).setFontSize(40).setDepth(101);
+      this.killCount.addImage("pepper", {
+        key: "pepper",
+        width: 45,
+        height: 45
+      });
+      this.killCount.setText("[img=pepper] 0");
+      this.killCount.setScrollFactor(0);
+
+      this.cameras.main.ignore(this.killCount);
 
       this.map = new GameMap(this);
-      this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /100, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
+      this.dominationText = this.add.text(
+        this.canvas.width / 2,
+        this.canvas.height /100,
+        "",
+      ).setOrigin(0.5, 0).setFontSize(this.canvas.height / 20).setDepth(101);
+
+      this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
       this.dominationBar.draw();
       this.cameras.main.ignore(this.dominationBar);
+      this.cameras.main.ignore(this.dominationText);
       this.dominationBar.bar.x -= this.dominationBar.width / 2;
 
      const playerJoined = (data: FirstPlayerData) =>{
         this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
-        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id));
+        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id), false, 0.1, 0.1);
       }
 
       this.socket.on("playerJoined", (data: FirstPlayerData) => {
@@ -184,14 +213,12 @@ class GameScene extends Phaser.Scene {
         if(!this.players.has(data.id)) return;
         this.players.get(data.id).tick(data, object.hit);
       });
-      // this.socket.on("test", (pos, corners) => {
-      //   console.log(pos);
-      //   this.add.circle(pos.x, pos.y, 5, 0x00FF0F).setOrigin(0.5).setDepth(0);
-      //   this.add.circle(corners[0].x, corners[0].y, 10, 0x00FF00).setOrigin(0.5);
-      //   this.add.circle(corners[1].x, corners[1].y, 10, 0x00FF00).setOrigin(0.5);
-      //   this.add.circle(corners[2].x, corners[2].y, 10, 0x00FF00).setOrigin(0.5);
-      //   this.add.circle(corners[3].x, corners[3].y, 10, 0x00FF00).setOrigin(0.5);
-      // })
+      this.socket.on("test", (pos, corners) => {
+        console.log(pos);
+        if(this.cirle) this.cirle.destroy();
+        this.cirle =  this.add.circle(pos.x, pos.y, 5, 0x00FF0F).setOrigin(0.5).setDepth(10);
+       
+      })
 
       this.socket.on("youDied", ({reason, who, survivedTime, shotDragons, peppers}) => {
        var me = this.players.get(this.socket.id);
@@ -209,7 +236,7 @@ class GameScene extends Phaser.Scene {
         
           },
         });     
-      })
+      });
       this.socket.on("shotDragon", ({who, id, reason}) => {
         // console.log("shotDragon", who, id, reason);
         var txt = `[b][color=#e82a1f]Shot [/color][color=#0000FF]${who}[/color][/b]`;
@@ -363,6 +390,16 @@ class GameScene extends Phaser.Scene {
 
       });
     }
+if(this.dominationBar && this.dominationBar.visible) {
+    this.dominationBar.destroy();
+    this.dominationBar = new HealthBar(this, this.canvas.width / 8, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
+    this.dominationBar.draw();
+    this.cameras.main.ignore(this.dominationBar);
+
+    this.dominationText.x = this.canvas.width / 2;
+    this.dominationText.y = this.canvas.height / 100;
+    this.dominationText.setFontSize(this.canvas.height / 20);
+}
 
     if(this.deathScreen && this.deathScreen.visible) {
       this.deathScreen.resize();
@@ -405,6 +442,10 @@ class GameScene extends Phaser.Scene {
       totalDomination.none = (totalDomination.none*100) / (i );
       // console.log(totalDomination);
       this.dominationBar.setHealth(totalDomination.red, totalDomination.blue);
+
+      var oppositeTeam = this.team == "red" ? "blue" : "red";
+      console.log(this.team);
+     if(this.team && !this.loadingText.visible) this.dominationText.setText(Math.round(totalDomination[this.team]) ==  Math.round(totalDomination[oppositeTeam]) ? "The game is tied!" : Math.round(totalDomination[this.team]) >  Math.round(totalDomination[oppositeTeam]) ? "Your team is winning!" : "Your team is losing!");
 
 
     }

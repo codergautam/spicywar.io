@@ -14,9 +14,10 @@ class Player {
       y: 0,
     };
     this.speed = 1;
+    this.speedMultiplier = 1;
     this.down = false;
     this.spawnTime = Date.now();
-    this.peppers = 1000;
+    this.peppers = 0;
     this.shotDragons = 0;
     this.lastHit = Date.now();
     this.whoLastHit = null;
@@ -80,6 +81,7 @@ class Player {
       pos: this.pos,
       lookAngle: this.lookAngle,
       health: this.health,
+      peppers: this.peppers,
     };
   }
   getCorners(extraDiff = 1) {
@@ -136,16 +138,16 @@ class Player {
     //move
     if(this.queuedForDeath) return;
     if(this.controller.left) {
-      this.pos.x -= tickDiff * 0.2 * this.speed;
+      this.pos.x -= tickDiff * 0.2 * this.speed * this.speedMultiplier;
     }
     if(this.controller.right) {
-      this.pos.x += tickDiff * 0.2 * this.speed;
+      this.pos.x += tickDiff * 0.2 * this.speed * this.speedMultiplier;
     }
     if(this.controller.up) {
-      this.pos.y -= tickDiff * 0.2 * this.speed;
+      this.pos.y -= tickDiff * 0.2 * this.speed * this.speedMultiplier;
     }
     if(this.controller.down) {
-      this.pos.y += tickDiff * 0.2* this.speed;
+      this.pos.y += tickDiff * 0.2* this.speed  * this.speedMultiplier;
     }
 
     if(this.health < this.maxHealth) {
@@ -158,6 +160,15 @@ class Player {
     var corners = this.getCorners(0.5);
     // this.socket.emit("corners", [this.pos])
     //shoot
+    //cloning the object is necessary because the object is changed in the tick function
+    var pos =JSON.parse(JSON.stringify(this.pos));
+ 
+   pos.x += (Math.cos(this.lookAngle + Math.PI / 4) * this.speed * (75));
+    pos.y += (Math.sin(this.lookAngle + Math.PI / 4) * this.speed * (75));
+    // pos.x -= Math.cos(Math.PI) * this.speed * (150);
+    // pos.y -= Math.sin(Math.PI) * this.speed * (150);
+    this.socket.emit("test", pos);
+
     if(!this.down) return;
     var room = roomlist.getRoom(this.roomId);
     this.down = false;

@@ -13,8 +13,22 @@ module.exports = class Island {
     // state 1 = capturing
     // state 2 = captured
     this.capturingBy = 0.1;
+    this.lastPepperGrew = Date.now();
     this.id = idgen();
     this.capturedPercentage = 0;
+  }
+  pepperGrew(room) {
+    this.lastPepperGrew = Date.now();
+    
+    // check if captured
+    if(this.capturedBy == "none") return;
+    
+    room.players.forEach(player => {
+      if(player.team == this.capturedBy) {
+        player.peppers += 1;
+      }
+    });
+
   }
   getSendObject() {
     return {
@@ -30,6 +44,7 @@ module.exports = class Island {
   tick(diff, room) {
     if(!this.canBeCaptured) return;
     var players = Array.from(room.players.values()).filter(player => this.isIn(player.pos));
+    if(this.lastPepperGrew + 1000 < Date.now()) this.pepperGrew(room);
     if(players.length < 1 && this.captureState == 1) {
       this.capturedPercentage -= (diff / 50) * 0.5;
       if(this.capturedPercentage <= 0) {

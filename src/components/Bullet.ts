@@ -40,6 +40,7 @@ export default class Bullet extends Phaser.GameObjects.Container {
    
     this.x += Math.cos(this.mAngle) * this.speed * 50 * ((Date.now() - this.lastUpdate) / 50);
     this.y += Math.sin(this.mAngle) * this.speed * 50 * ((Date.now() - this.lastUpdate) / 50);
+    
     this.lastUpdate = Date.now();
 
   }
