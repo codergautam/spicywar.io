@@ -105,7 +105,7 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
 
     
 
-    console.log(this.box.displayWidth, this.respawnbutton.btn.disp);
+    // console.log(this.box.displayWidth, this.respawnbutton.btn.disp);
     while (this.respawnbutton.btn.displayWidth > this.box.displayWidth || this.respawnbutton.btn.displayHeight > this.box.displayHeight / 7) {
       this.respawnbutton.btn.setScale(this.respawnbutton.btn.scaleX - 0.01);
     }

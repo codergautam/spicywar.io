@@ -7,6 +7,7 @@ interface PlayerData extends Data {
   lookAngle: number;
   maxHealth: number;
   peppers: number;
+  hit: boolean;
 }
 interface FirstPlayerData extends PlayerData {
   name: string;

@@ -3,9 +3,6 @@ import GameScene from "../GameScene";
 import { PlayerData } from "../helpers/Packets";
 import HealthBar from "./HealthBar";
 
-const TIME_TRAVEL_MS = 100;
-const FRAME_HISTORY_MAX = 5;
-
 export default class Player extends Phaser.GameObjects.Container {
   square: Phaser.GameObjects.Rectangle;
   gun: Phaser.GameObjects.Rectangle;
@@ -21,7 +18,8 @@ export default class Player extends Phaser.GameObjects.Container {
   healthBar: HealthBar;
   oldPeppers: number;
   image: Phaser.GameObjects.Image;
-  history: {frame: PlayerData, timestamp: number}[];
+  needsFlip: boolean;
+  realScaleX: number;
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -39,7 +37,6 @@ export default class Player extends Phaser.GameObjects.Container {
     this.lastTick = Date.now();
     this.lastUpdate = Date.now();
 
-    this.history = [];
 
     this.id = id;
     this.name = name;
@@ -55,6 +52,9 @@ export default class Player extends Phaser.GameObjects.Container {
       0,
       team == "red" ? "redDragon" : "blueDragon"
     ).setOrigin(0.5);
+
+    this.realScaleX = 0.5;
+    this.image.setScale(this.realScaleX);
 
     // this.image.;
     this.nameTag = new Phaser.GameObjects.Text(
@@ -75,7 +75,7 @@ export default class Player extends Phaser.GameObjects.Container {
       this.healthBar = new HealthBar(
         scene,
         0,
-        -0.5 * this.image.displayHeight,
+        -0.5 * (this.image.displayHeight / 2),
         75,
         10,
         false
@@ -84,7 +84,7 @@ export default class Player extends Phaser.GameObjects.Container {
       this.healthBar = new HealthBar(
         scene,
         0,
-        -0.75 * this.image.displayHeight,
+        -0.75 * (this.image.displayHeight / 2),
         75,
         10,
         false
@@ -104,34 +104,22 @@ export default class Player extends Phaser.GameObjects.Container {
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
   }
-  getPreviousTimestampFrame(time) {
-    for (let i = this.history.length - 1; i >= 0; i -= 1) {
-      const timestampFrame = this.history[i];
-      if (timestampFrame.timestamp < time) {
-        return timestampFrame;
-      }
-    }
-    return null;
-  }
-  getNextTimestampFrame(time) {
-    let nextTimestampFrame = null;
-    for (let i = this.history.length - 1; i >= 0; i -= 1) {
-      const timestampFrame = this.history[i];
-      if (timestampFrame.timestamp < time) {
-        break;
-      }
-      nextTimestampFrame = timestampFrame;
-    }
-    return nextTimestampFrame;
-  }
-
   tick(data: PlayerData, hit: boolean) {
-    this.toAngle = 0;
-
+    this.toAngle = data.lookAngle + Math.PI + 0.35;
+    // if(this.needsFlip) this.toAngle -= Math.PI - 0.6;
+    this.lastTick = Date.now();
     // this means we just got some data about this player
-
-    this.history.push({frame: data, timestamp: this.scene.time.now});
-    if (this.history.length > FRAME_HISTORY_MAX) this.history.shift();
+    this.scene.tweens.add({
+      targets: this,
+      x: data.pos.x,
+      y: data.pos.y,
+      angle: this.toAngle,
+      duration: hit ? 200 : 50,
+      ease: "Power2",
+      onComplete: () => {
+      
+      }
+    });
 
     (this.scene as GameScene).killCount.setText("[img=pepper] " + data.peppers);
     this.oldPeppers = data.peppers;
@@ -139,7 +127,7 @@ export default class Player extends Phaser.GameObjects.Container {
     if (data.health) this.healthBar.setLerpValue(data.health);
 
     this.lastTick = Date.now();
-  }
+  } 
   updateObject() {
     var tickDiff = Date.now() - this.lastUpdate;
     function rLerp(A: number, B: number, w: number) {
@@ -149,51 +137,32 @@ export default class Player extends Phaser.GameObjects.Container {
     }
 
     if ((this.scene as GameScene).socket.id != this.id)
-      this.image.setRotation(rLerp(this.image.rotation, this.toAngle, 0.5));
+    
+      // this.image.setRotation(this.toAngle + (this.needsFlip ? Math.PI - 0.6 : 0));
+      this.image.setRotation(rLerp(this.image.rotation -(this.needsFlip ? Math.PI - 0.6 : 0), this.toAngle, 0.6)+(this.needsFlip ? Math.PI - 0.6 : 0));
     else
       this.image.setRotation(
         (this.scene as GameScene).mouseAngle + Math.PI + 0.35
       );
 
-    console.log(this.image.rotation);
+    // console.log(this.image.rotation);
 
-    const previousTimestampFrame = this.getPreviousTimestampFrame(
-      this.scene.time.now - TIME_TRAVEL_MS
-    );
-    const nextTimestampFrame = this.getNextTimestampFrame(
-      this.scene.time.now - TIME_TRAVEL_MS
-    );
+    // if(this.id == (this.scene as GameScene).socket.id) {
+     if (this.image.rotation - (this.id != (this.scene as GameScene).socket.id && this.needsFlip ? Math.PI -0.6 : 0 ) > Math.PI / 2 || this.image.rotation -  (this.id != (this.scene as GameScene).socket.id && this.needsFlip ? Math.PI -0.6 : 0 ) < -Math.PI / 2) {
+      this.image.scaleX = -1 * this.realScaleX;
+     if(this.id == (this.scene as GameScene).socket.id) { 
+      // console.log(this.image.rotation);
+      this.image.rotation += Math.PI - 0.6 
+    };
+    this.needsFlip = true;
+    // console.log("flip");
+    } else {
+      this.image.scaleX = 1 * this.realScaleX;
+      this.needsFlip = false;
 
-    var time = this.scene.time.now;
-
-    var interpPosition;
-    if (previousTimestampFrame && nextTimestampFrame) {
-      let interpFactor = (time - TIME_TRAVEL_MS - previousTimestampFrame.timestamp)
-      / (nextTimestampFrame.timestamp - previousTimestampFrame.timestamp);
-      // Just spawned in, don't interpolate anything.
-      interpPosition = new Phaser.Math.Vector2(
-        previousTimestampFrame.frame.pos.x,
-        previousTimestampFrame.frame.pos.y,
-      ).lerp(new Phaser.Math.Vector2(
-        nextTimestampFrame.frame.pos.x,
-        nextTimestampFrame.frame.pos.y,
-      ), interpFactor);
-    } else if(this.history.length > 0) {
-      const lastTimestampFrame = this.history[this.history.length - 1];
-      interpPosition = new Phaser.Math.Vector2(
-        lastTimestampFrame.frame.pos.x,
-        lastTimestampFrame.frame.pos.y,
-      );
     }
-
-    if(interpPosition) this.setPosition(interpPosition.x, interpPosition.y);
-
-    //  if (this.image.rotation > Math.PI / 2 || this.image.rotation < -Math.PI / 2) {
-    //   this.image.scaleX = -1;
-    //   this.image.rotation += Math.PI - 0.3;
-    // } else {
-    //   this.image.scaleX = 1;
-    // }
+  // }
+    
 
     //  this.gun.setRotation(this.square.rotation);
     //  this.gun.x = Math.cos(this.square.rotation) * this.bodySize/2;

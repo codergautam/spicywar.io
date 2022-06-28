@@ -40,10 +40,10 @@ io.on("connection", async (socket) => {
     if(!room) return;
     room.playerControllerUpdate(socket.id, controller);
   });
-  socket.on("mouse", (mouseAngle) => {
+  socket.on("mouse", (mouseAngle, needsFlip) => {
     var room = roomlist.getRoomByPlayerId(socket.id);
     if(!room) return;
-    room.playerMouseUpdate(socket.id, mouseAngle);
+    room.playerMouseUpdate(socket.id, mouseAngle, needsFlip);
   });
   socket.on("down", (down) => {
     var room = roomlist.getRoomByPlayerId(socket.id);

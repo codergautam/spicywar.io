@@ -1,3 +1,4 @@
+const e = require("express");
 const idgen = require("../helpers/idgen");
 const roomlist = require("../helpers/roomlist");
 
@@ -22,6 +23,7 @@ class Player {
     this.lastHit = Date.now();
     this.whoLastHit = null;
     this.healAmount = 0.005;
+    this.needsFlip = false;
 
     this.queuedForDeath = false;
 
@@ -29,7 +31,7 @@ class Player {
     this.maxHealth = 100;
     this.damage = 5;
 
-    this.bodySize = 50;
+    this.bodySize = 100;
 
     this.team = Math.random() > 0.5 ? "red" : "blue";
 
@@ -61,8 +63,10 @@ class Player {
 
     this.controller = controller;
   }
-  updateMouse(mouseAngle) {
+  updateMouse(mouseAngle, needsFlip = false) {
     this.lookAngle = mouseAngle;
+    // console.log(needsFlip);
+    this.needsFlip = needsFlip;
   }
   getFirstSendObject() {
     return {
@@ -82,6 +86,7 @@ class Player {
       lookAngle: this.lookAngle,
       health: this.health,
       peppers: this.peppers,
+      hit: this.hit
     };
   }
   getCorners(extraDiff = 1) {
@@ -163,8 +168,9 @@ class Player {
     //cloning the object is necessary because the object is changed in the tick function
     var pos =JSON.parse(JSON.stringify(this.pos));
  
-   pos.x += (Math.cos(this.lookAngle + Math.PI / 4) * this.speed * (75));
-    pos.y += (Math.sin(this.lookAngle + Math.PI / 4) * this.speed * (75));
+    var newAngle = this.lookAngle;
+   pos.x += (Math.cos(newAngle + Math.PI / 4) * this.speed * (75));
+    pos.y += (Math.sin(newAngle + Math.PI / 4) * this.speed * (75));
     // pos.x -= Math.cos(Math.PI) * this.speed * (150);
     // pos.y -= Math.sin(Math.PI) * this.speed * (150);
     this.socket.emit("test", pos);

@@ -14,9 +14,15 @@ class Bullet {
     this.angle = player.lookAngle;
     //cloning the object is necessary because the object is changed in the tick function
     this.pos = JSON.parse(JSON.stringify(player.pos));
-    this.pos.x += (Math.cos(this.angle + Math.PI / 4) * this.speed * (150));
-    this.pos.y += (Math.sin(this.angle + Math.PI / 4) * this.speed * (150));
+    if(player.needsFlip) {
+      this.angle -= (Math.PI / 2) - 0.2;
+    }
+    this.pos.x += (Math.cos(this.angle + Math.PI / 4) * this.speed * (75));
+    this.pos.y += (Math.sin(this.angle + Math.PI / 4) * this.speed * (75));
     this.angle = player.lookAngle - 0.3;
+    if(player.needsFlip) {
+      this.angle += (Math.PI / 2) - 1;
+    }
     this.createdAt = Date.now();
     this.owner = player.id;
     this.damage = player.damage;

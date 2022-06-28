@@ -91,11 +91,11 @@ class Room {
       player.updateController(controller);
     }
   }
-  playerMouseUpdate(id, mouseAngle) {
+  playerMouseUpdate(id, mouseAngle, needsFlip) {
     var player = this.players.get(id);
     if(player) {
       if(typeof mouseAngle == "number" && !isNaN(mouseAngle)) {
-      player.updateMouse(mouseAngle);
+      player.updateMouse(mouseAngle, needsFlip);
       }
     }
   }
@@ -174,7 +174,7 @@ class Room {
     this.players.forEach((player) => {
 
       player.tick(tickDiff);
-      ioinstance.to(this.id).emit("playerUpdate", player.getSendObject(), {hit: player.hit});
+      ioinstance.to(this.id).emit("playerUpdate", player.getSendObject());
       if(player.hit) player.hit = false;
 
       var atleastinoneisland = this.islands.some((island) => island.capturedBy == player.team && island.isIn(player.pos));

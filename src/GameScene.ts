@@ -208,13 +208,13 @@ class GameScene extends Phaser.Scene {
       //     }, 1000/20);
       //   });
       // });
-      this.socket.on("playerUpdate", (data: PlayerData, object: {hit: boolean}) => {
+      this.socket.on("playerUpdate", (data: PlayerData) => {
         if(!this.ready) return;
         if(!this.players.has(data.id)) return;
-        this.players.get(data.id).tick(data, object.hit);
+        this.players.get(data.id).tick(data, data.hit);
       });
       this.socket.on("test", (pos, corners) => {
-        console.log(pos);
+        // console.log(pos);
         if(this.cirle) this.cirle.destroy();
         this.cirle =  this.add.circle(pos.x, pos.y, 5, 0x00FF0F).setOrigin(0.5).setDepth(10);
        
@@ -354,10 +354,6 @@ class GameScene extends Phaser.Scene {
 
     this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2));
     //on mouse move
-    this.input.on("pointermove", () => {
-     this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2))
-      this.socket.emit("mouse", this.mouseAngle);
-    });
 
     this.input.on("pointerdown", () => {
       this.socket.emit("down", true);
@@ -426,7 +422,7 @@ if(this.dominationBar && this.dominationBar.visible) {
     }
     var i = 0;
       this.islands.forEach(island => {
-        if(island.x == 0 && island.y == 0) return console.log("fuc")
+        // if(island.x == 0 && island.y == 0) return console.log("fuc")
         var d = island.getDomination();
 
         totalDomination.red += d.red;
@@ -444,7 +440,15 @@ if(this.dominationBar && this.dominationBar.visible) {
       this.dominationBar.setHealth(totalDomination.red, totalDomination.blue);
 
       var oppositeTeam = this.team == "red" ? "blue" : "red";
-      console.log(this.team);
+      // console.log(this.team);
+
+      if(this.socket && this.players.has(this.socket.id)) {
+      this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2))
+
+      // console.log(this.players.get(this.socket.id).needsFlip);
+      this.socket.emit("mouse", this.mouseAngle, this.players.get(this.socket.id).needsFlip);
+      }
+
      if(this.team && !this.loadingText.visible) this.dominationText.setText(Math.round(totalDomination[this.team]) ==  Math.round(totalDomination[oppositeTeam]) ? "The game is tied!" : Math.round(totalDomination[this.team]) >  Math.round(totalDomination[oppositeTeam]) ? "Your team is winning!" : "Your team is losing!");
 
 

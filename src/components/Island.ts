@@ -47,7 +47,7 @@ export default class Island extends Phaser.GameObjects.Container {
     this.capturedBy = team;
   }
   setPercent(percent: number, team: string) {
-    console.log(team)
+    // console.log(team)
     this.capturingCircle.setFillStyle(team == "red" ? 0xFF0000 : team == "none" ? 0x838579 : 0x0000FF);
     this.capturingCircle.setVisible(true);
     this.capturingCircle.setScale(percent/100);
