@@ -23,6 +23,8 @@ export default class ClassPicker extends Phaser.GameObjects.Container {
 
     this.add(this.rect1);
     this.add(this.rect2);
+
+    
   }
   constructor(scene: GameScene) {
     super(scene as Scene);

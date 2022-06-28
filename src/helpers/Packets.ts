@@ -8,6 +8,8 @@ interface PlayerData extends Data {
   maxHealth: number;
   peppers: number;
   hit: boolean;
+  level: number;
+  untilNextLevel: number;
 }
 interface FirstPlayerData extends PlayerData {
   name: string;

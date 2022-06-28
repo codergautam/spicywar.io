@@ -57,7 +57,8 @@ class Bullet {
 
   }
   collidingBullet(bullet) {
-    return intersect.circleCircle(this.pos.x, this.pos.y, this.length, bullet.pos.x, bullet.pos.y, bullet.length);
+    // return intersect.circleCircle(this.pos.x, this.pos.y, this.length, bullet.pos.x, bullet.pos.y, bullet.length);
+    return false;
   }
   getSendObject() {
     return {

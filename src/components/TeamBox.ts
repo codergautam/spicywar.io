@@ -11,7 +11,7 @@ export default class TeamBox extends Phaser.GameObjects.Container {
     this.y = y;
 
     this.rect = new Phaser.GameObjects.Rectangle(scene, this.x, this.y, Math.min(scene.canvas.width / 1.5, 800), scene.canvas.height / 3, 0x00ffff).setOrigin(0.5, 0.5).setDepth(1);
-    this.image = new Phaser.GameObjects.Image(scene, this.x, this.y, team+"Player").setOrigin(0.5, 0.5).setDepth(2);
+    this.image = new Phaser.GameObjects.Image(scene, this.x-10, this.y, team+"Dragon").setOrigin(0.5, 0.5).setDepth(2);
     this.text = new Phaser.GameObjects.Text(scene, this.x, this.y, team, {
       fontSize: Math.min(scene.canvas.width / 10, 70)+"px",
       color: team == "red" ? "#ff0000" : "#0000FF",

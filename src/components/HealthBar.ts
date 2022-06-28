@@ -93,6 +93,8 @@ class HealthBar extends Phaser.GameObjects.Container {
     updateContainer() {
         const lerp = (start: number,end: number,amt: number) => (1-amt)*start+amt*end;
 
+        if(isNaN(this.value)) this.value = 0; 
+
         this.setHealth(lerp(this.value, this.toLerp, 0.25));
        
     }

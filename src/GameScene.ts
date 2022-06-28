@@ -45,6 +45,8 @@ class GameScene extends Phaser.Scene {
   dominationText: Phaser.GameObjects.Text;
   team: string;
   cirle: Phaser.GameObjects.Arc;
+  spicyMeter: HealthBar;
+  spiceText: Phaser.GameObjects.Text;
 
     constructor(callback: Function) {
       super("game");
@@ -120,13 +122,25 @@ class GameScene extends Phaser.Scene {
 
       this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
       this.dominationBar.draw();
+
+      this.spicyMeter = new HealthBar(this, this.canvas.width / 8, (this.canvas.height / 2) - (this.canvas.height / 20), this.canvas.width / 2, this.canvas.height / 20, "spicy" ).setDepth(10);
+      this.spicyMeter.draw();
+
+      this.spiceText = this.add.text(
+        this.canvas.width / 2,
+        this.canvas.height - (this.canvas.height / 6),
+        "🌶️ Spice Level: 1 (0%)",
+      ).setOrigin(0.5, 0).setFontSize(this.canvas.height / 20).setDepth(101);
+
+      this.cameras.main.ignore(this.spiceText);
+      this.cameras.main.ignore(this.spicyMeter);
       this.cameras.main.ignore(this.dominationBar);
       this.cameras.main.ignore(this.dominationText);
       this.dominationBar.bar.x -= this.dominationBar.width / 2;
 
      const playerJoined = (data: FirstPlayerData) =>{
         this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
-        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id), false, 0.1, 0.1);
+        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id));
       }
 
       this.socket.on("playerJoined", (data: FirstPlayerData) => {
@@ -213,12 +227,12 @@ class GameScene extends Phaser.Scene {
         if(!this.players.has(data.id)) return;
         this.players.get(data.id).tick(data, data.hit);
       });
-      this.socket.on("test", (pos, corners) => {
-        // console.log(pos);
-        if(this.cirle) this.cirle.destroy();
-        this.cirle =  this.add.circle(pos.x, pos.y, 5, 0x00FF0F).setOrigin(0.5).setDepth(10);
+      // this.socket.on("test", (pos, corners) => {
+      //   // console.log(pos);
+      //   if(this.cirle) this.cirle.destroy();
+      //   this.cirle =  this.add.circle(pos.x, pos.y, 5, 0x00FF0F).setOrigin(0.5).setDepth(10);
        
-      })
+      // })
 
       this.socket.on("youDied", ({reason, who, survivedTime, shotDragons, peppers}) => {
        var me = this.players.get(this.socket.id);
@@ -386,6 +400,8 @@ class GameScene extends Phaser.Scene {
 
       });
     }
+    if(this.spicyMeter && this.spicyMeter.visible) {
+    }
 if(this.dominationBar && this.dominationBar.visible) {
     this.dominationBar.destroy();
     this.dominationBar = new HealthBar(this, this.canvas.width / 8, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
@@ -414,6 +430,10 @@ if(this.dominationBar && this.dominationBar.visible) {
    Array.from(this.players.values()).forEach(player => player.updateObject());
    Array.from(this.bullets.values()).forEach(bullet => bullet.updateObject());
 
+   if(this.spicyMeter && this.spicyMeter.visible) {
+    this.spicyMeter.updateContainer();
+   }
+
    if(this.dominationBar && this.dominationBar.visible) {
     var totalDomination = {
       red: 0,
@@ -422,7 +442,7 @@ if(this.dominationBar && this.dominationBar.visible) {
     }
     var i = 0;
       this.islands.forEach(island => {
-        // if(island.x == 0 && island.y == 0) return console.log("fuc")
+         if(island.x == 0 && island.y == 0) return;
         var d = island.getDomination();
 
         totalDomination.red += d.red;

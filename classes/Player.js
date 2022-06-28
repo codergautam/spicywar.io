@@ -4,6 +4,8 @@ const roomlist = require("../helpers/roomlist");
 
 const Bullet = require("./Bullet");
 
+const levels = require("../helpers/levels")
+
 class Player {
   constructor(name, id=idgen(), socket=undefined) {
     this.name = name;
@@ -15,6 +17,7 @@ class Player {
       y: 0,
     };
     this.speed = 1;
+    this.untilNextLevel = levels[0];
     this.speedMultiplier = 1;
     this.down = false;
     this.spawnTime = Date.now();
@@ -24,6 +27,9 @@ class Player {
     this.whoLastHit = null;
     this.healAmount = 0.005;
     this.needsFlip = false;
+
+    this.level = 1;
+
 
     this.queuedForDeath = false;
 
@@ -76,7 +82,9 @@ class Player {
       team: this.team,
 
       pos: this.pos,
-      lookAngle: this.lookAngle
+      lookAngle: this.lookAngle,
+      untilNextLevel: this.untilNextLevel,
+      level: this.level,
     }
   }
   getSendObject() {
@@ -86,7 +94,9 @@ class Player {
       lookAngle: this.lookAngle,
       health: this.health,
       peppers: this.peppers,
-      hit: this.hit
+      hit: this.hit,
+      level: this.level, 
+      untilNextLevel: this.untilNextLevel
     };
   }
   getCorners(extraDiff = 1) {
@@ -155,6 +165,12 @@ class Player {
       this.pos.y += tickDiff * 0.2* this.speed  * this.speedMultiplier;
     }
 
+    if(this.peppers > this.untilNextLevel) {
+      this.level++;
+      this.untilNextLevel = levels[this.level-1];
+      // this.speedMultiplier = 1;
+    }
+
     if(this.health < this.maxHealth) {
       if(Date.now() - this.lastHit > 5000) {
         //33 because 1000 / 30 (tick speed)
@@ -173,7 +189,7 @@ class Player {
     pos.y += (Math.sin(newAngle + Math.PI / 4) * this.speed * (75));
     // pos.x -= Math.cos(Math.PI) * this.speed * (150);
     // pos.y -= Math.sin(Math.PI) * this.speed * (150);
-    this.socket.emit("test", pos);
+    // this.socket.emit("test", pos);
 
     if(!this.down) return;
     var room = roomlist.getRoom(this.roomId);
