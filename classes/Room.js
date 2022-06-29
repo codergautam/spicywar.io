@@ -24,29 +24,29 @@ class Room {
     this.islands.push(new Island(
       "circle",
       500,
-      { x: 1200, y: 1200 },
+      { x: 1400, y: 1400 },
     ));
 
     this.islands.push(new Island(
       "circle",
       500,
-      { x: -1100, y: 1200 },
+      { x: -1300, y: 1400 },
     ));
     
     this.islands.push(new Island(
       "circle",
       500,
-      { x: 1500, y: -100 },
+      { x: 1700, y: -300 },
     ));
     this.islands.push(new Island(
       "circle",
       500,
-      { x: -1400, y: -100 },
+      { x: -1600, y: -300 },
     ));
     this.islands.push(new Island(
       "circle",
       500,
-      { x: 0, y: -1400 },
+      { x: 0, y: -1600 },
     ));
     this.bridges.push(new Bridge(this.islands[0], this.islands[1], 100));
      this.bridges.push(new Bridge(this.islands[0], this.islands[2], 100));
@@ -146,6 +146,7 @@ class Room {
       player.socket.to(this.id).emit("playerLeft", player.id);
       if(!reason.tick && this.players.has(reason.who.id)) {
         this.players.get(reason.who.id).shotDragons++;
+        this.players.get(reason.who.id).peppers += Math.round(player.peppers * 0.5);
         this.players.get(reason.who.id).socket.emit("shotDragon", {how: "drown", who: player.name, id: player.id});
       }
       this.players.delete(player.id);
@@ -211,6 +212,7 @@ class Room {
             player.socket.to(this.id).emit("playerLeft", player.id);
             if(this.players.has(bullet.owner)) {
               this.players.get(bullet.owner).shotDragons++;
+              this.players.get(bullet.owner).peppers += Math.round(player.peppers * 0.5);
               this.players.get(bullet.owner).socket.emit("shotDragon", {how: "burnt", who: player.name, id: player.id});
             }
             this.players.delete(player.id);

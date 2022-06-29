@@ -204,15 +204,19 @@ class Player {
       if(choice == 0) {
         this.speedLevel++;
         console.log("speed level up");
+        this.socket.emit("levelUp", "speed", this.speedLevel);
       } else if(choice == 1) {
         this.sizeLevel++;
         console.log("size");
+        this.socket.emit("levelUp", "size", this.sizeLevel);
       } else if(choice == 2) {
         this.bulletLevel++;
         console.log("bullet");
+        this.socket.emit("levelUp", "bullet", this.bulletLevel);
       } else if(choice == 3) {
         this.healthLevel++;
         console.log("health");
+        this.socket.emit("levelUp", "health", this.healthLevel);
         this.health =  this.maxHealth = 100 + (this.healthLevel == 1 ? 0 : this.healthLevel == 2 ? 40 : 100);
       }
     }

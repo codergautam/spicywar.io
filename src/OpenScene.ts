@@ -31,6 +31,7 @@ class OpenScene extends Phaser.Scene {
       // this.load.image("bluePlayer", "/assets/images/bluePlayer.png");
       
       this.load.image("background", "/assets/images/background.jpeg");
+      this.load.image("bridge", "/assets/images/bridge.png");
 
       this.load.image("blueDragon", "/assets/images/bluedragon.png");
       this.load.image("redDragon", "/assets/images/reddragon.png");
@@ -39,7 +40,7 @@ class OpenScene extends Phaser.Scene {
       this.load.image("again", "/assets/images/again.jpeg");
       this.load.image("pepper", "/assets/images/pepper.png");
 
-      this.load.plugin('rexbbcodetextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexbbcodetextplugin.min.js', true);
+      // this.load.plugin('rexbbcodetextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexbbcodetextplugin.min.js', true);
 
 
 

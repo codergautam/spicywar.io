@@ -1,9 +1,11 @@
 import Phaser from "phaser";
+import BBCodeText from "phaser3-rex-plugins/plugins/bbcodetext";
 import { io, Socket } from "socket.io-client";
 import Bullet from "./components/Bullet";
 import DeathScreen from "./components/DeathScreen";
 import HealthBar from "./components/HealthBar";
 import Island from "./components/Island";
+import Leaderboard from "./components/Leaderboard";
 import GameMap from "./components/Map";
 import Player from "./components/Player";
 import TeamPicker from "./components/TeamPicker";
@@ -50,6 +52,7 @@ class GameScene extends Phaser.Scene {
   background: Phaser.GameObjects.TileSprite;
   lastKnownMyDisplayWidth: number;
   minimap: Phaser.Cameras.Scene2D.Camera;
+  leaderboard: any;
 
     constructor(callback: Function) {
       super("game");
@@ -124,10 +127,11 @@ this.lastKnownMyDisplayWidth = 0;
       this.minimap.ignore(this.background);
 
 
-      this.killCount = (this.add as any).rexBBCodeText(15, 10, "Stabs: 0", {
+      this.killCount = new BBCodeText(this, 15, 10, "Stabs: 0", {
         fontFamily: "Georgia, \"Goudy Bookletter 1911\", Times, serif",
         fill: "#000000",
       }).setFontSize(40).setDepth(101);
+      this.add.existing(this.killCount);
       this.killCount.addImage("pepper", {
         key: "pepper",
         width: 45,
@@ -143,6 +147,7 @@ this.lastKnownMyDisplayWidth = 0;
       
 
       this.map = new GameMap(this);
+      this.leaderboard = new Leaderboard(this);
       this.dominationText = this.add.text(
         this.canvas.width / 2,
         this.canvas.height /100,
@@ -246,7 +251,8 @@ this.lastKnownMyDisplayWidth = 0;
 
       this.socket.on("bridges", (data: BridgeData[]) => {
         data.forEach(d => {
-           var r = this.add.rectangle(d.pos.x, d.pos.y, d.width*2, d.length, 0xffffff).setDepth(0).setRotation(d.angle).setOrigin(0,0);
+          //  var r = this.add.rectangle(d.pos.x, d.pos.y, d.width*2, d.length, 0xffffff).setDepth(0).setRotation(d.angle).setOrigin(0,0);
+          var r = this.add.tileSprite(d.pos.x, d.pos.y, d.width*2, d.length, "bridge").setDepth(0).setTileScale(0.4).setRotation(d.angle).setOrigin(0,0);
            this.uiCam.ignore(r);
         });
       });
@@ -282,6 +288,13 @@ this.lastKnownMyDisplayWidth = 0;
 
       this.socket.on("youDied", ({reason, who, survivedTime, shotDragons, peppers}) => {
        var me = this.players.get(this.socket.id);
+       this.killCount.visible = false;
+       this.minimap.visible = false;
+       this.spiceText.visible = false;
+       this.spicyMeter.visible = false;
+      //  this.dominationBar.visible = false;
+      this.dominationBar.bar.visible = false;
+       this.dominationText.visible = false;
        this.tweens.add({
           targets: me,
           alpha: 0,
@@ -291,24 +304,49 @@ this.lastKnownMyDisplayWidth = 0;
             // console.log("youDied", reason, who, survivedTime, shotDragons, peppers);
             this.deathScreen = new DeathScreen(this, reason, who, survivedTime, shotDragons, peppers);
             me.destroy();
-            this.killCount.visible = false;
-            this.minimap.visible = false;
-            this.spiceText.visible = false;
-            this.spicyMeter.visible = false;
-            this.dominationBar.visible = false;
-            this.dominationText.visible = false;
+
         this.players.delete(this.socket.id);
 
         
           },
         });     
       });
+      this.socket.on("levelUp", (type, level) => {
+        //first letter capital
+        type = type.charAt(0).toUpperCase() + type.slice(1);
+        if(type == "Bullet") type += "s";
+        var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type} upgraded!`, {fontSize: "32px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
+        this.cameras.main.ignore(text);
+        this.minimap.ignore(text);
+        console.log(type, level);
+        this.tweens.add({
+          targets: text,
+          alpha: 1,
+          y: this.canvas.height / 4,
+          duration: 500,
+          onComplete: () => {
+            setTimeout(() => {
+              this.tweens.add({
+                targets: text,
+                alpha: 0,
+                y: this.canvas.height / 3,
+                duration: 500,
+                onComplete: () => {
+                  text.destroy();
+                }
+              });
+            }, 1000);
+          }
+        });
+
+      })
       this.socket.on("shotDragon", ({who, id, reason}) => {
         // console.log("shotDragon", who, id, reason);
         var txt = `[b][color=#e82a1f]Shot [/color][color=#0000FF]${who}[/color][/b]`;
         const convert = (num, val, newNum) => (newNum * val) / num;
         var fontsize = convert(1366, 64, this.canvas.width);
-					var text = (this.add as any).rexBBCodeText(this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
+					var text = new BBCodeText(this, this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
+        this.add.existing(text);
 
 						const completeCallback = (text) => {
 							this.tweens.add({
@@ -322,6 +360,7 @@ this.lastKnownMyDisplayWidth = 0;
 								duration: 250
 							});
 						};
+            
 
 					this.tweens.add({
 						targets: text,
@@ -335,16 +374,16 @@ this.lastKnownMyDisplayWidth = 0;
 					this.cameras.main.ignore(text);
           this.minimap.ignore(text);
       });
-      var keys = (this.input.keyboard.addKeys({
-        up: 'up',
-        down: 'down',
-        left: 'left',
-        right: 'right',
-        w: 'W',
-        s: 'S',
-        a: 'A',
-        d: 'D',
-    }) as Keys);  
+    //   var keys = (this.input.keyboard.addKeys({
+    //     up: 'up',
+    //     down: 'down',
+    //     left: 'left',
+    //     right: 'right',
+    //     w: 'W',
+    //     s: 'S',
+    //     a: 'A',
+    //     d: 'D',
+    // }) as Keys);  
 
     this.controller = {
       up: false,
@@ -573,11 +612,14 @@ if(this.dominationBar && this.dominationBar.visible) {
 
      if(this.team && !this.loadingText.visible) this.dominationText.setText(Math.round(totalDomination[this.team]) ==  Math.round(totalDomination[oppositeTeam]) ? "The game is tied!" : Math.round(totalDomination[this.team]) >  Math.round(totalDomination[oppositeTeam]) ? "Your team is winning!" : "Your team is losing!");
 
-     var show = 1500;
+     var show = 1200;
      var me = this.players.get(this.socket.id);
-     if(me && me.displayWidth) this.lastKnownMyDisplayWidth = me.displayWidth;
+     console.log(me?.image);
+     if(me && me.image) this.lastKnownMyDisplayWidth = me.image?.displayWidth;
 
-     show += this.lastKnownMyDisplayWidth * 5;
+    //  console.log(this.lastKnownMyDisplayWidth);
+
+     show += this.lastKnownMyDisplayWidth * 3;
     
      
      //var oldZoom = this.cameras.main.zoom;
@@ -592,6 +634,8 @@ if(this.dominationBar && this.dominationBar.visible) {
       this.background.y = this.cameras.main.scrollY+this.canvas.height*1.005 / 2;
       this.background.width = this.cameras.main.displayWidth*1.1;
       this.background.height = this.cameras.main.displayHeight*1.1;
+
+      console.log(this.background.tileScaleX, this.background.tileScaleY);
     }
   }
 }
