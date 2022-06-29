@@ -91,11 +91,11 @@ class Room {
       player.updateController(controller);
     }
   }
-  playerMouseUpdate(id, mouseAngle, needsFlip) {
+  playerMouseUpdate(id, mouseAngle, distance, needsFlip) {
     var player = this.players.get(id);
     if(player) {
       if(typeof mouseAngle == "number" && !isNaN(mouseAngle)) {
-      player.updateMouse(mouseAngle, needsFlip);
+      player.updateMouse(mouseAngle, distance, needsFlip);
       }
     }
   }
@@ -134,6 +134,7 @@ class Room {
   getSpiceMeter(id) {
   }
   checkCollisions(player, reason) {
+    if(player.canFly) return;
     if(player.queuedForDeath &&Date.now() >= player.queuedForDeath) {
       if(Date.now() - player.lastHit <= 2000 && this.players.has(player.whoLastHit)) {
         var lastHitPlayer = this.players.get(player.whoLastHit);
@@ -200,8 +201,8 @@ class Room {
       for (var player of Array.from(this.players.values())) {
         if(bullet.collidingPlayer(player)) {
           if(bullet.team != player.team) {
-          player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * 5;
-          player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * 5;
+          player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 5 : player.bulletLevel == 2 ? 7 : 10);
+          player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 5 : player.bulletLevel == 2 ? 7 : 10);
           player.health -= bullet.damage;
           player.lastHit = Date.now();
           player.whoLastHit = bullet.owner;

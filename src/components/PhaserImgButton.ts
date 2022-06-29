@@ -11,6 +11,7 @@ export default class ImgButton extends Phaser.GameObjects.Container {
 
         this.btn = new Phaser.GameObjects.Image(scene, 0, 0, key);
       (this.scene as GameScene).cameras.main.ignore(this);
+      (this.scene as GameScene).minimap.ignore(this);
         this.btn.setInteractive().on("pointerdown", onClick);
         this.add(this.btn);
     }

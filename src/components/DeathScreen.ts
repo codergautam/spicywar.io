@@ -50,6 +50,7 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
     this.shotDragons = shotDragons;
 
     scene.cameras.main.ignore(this);
+    scene.minimap.ignore(this);
     this.scene.add.existing(this);
   }
   render(scene: GameScene) {
@@ -69,20 +70,22 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
 
     }).setOrigin(0.5, 0);
     
-    this.moreData = new Phaser.GameObjects.Text(scene, scene.canvas.width / 2, this.deadText.y + scene.canvas.height / 10, (this.reason == "drown" ? this.who === null ? "You fell into the water!" : "Shot into water by "+this.who : "You were shot by "+this.who)+`\n\nSurvived Time: $0s\nDragons shot: 0\nPeppers collected: 0`, {
+    this.moreData = new Phaser.GameObjects.Text(scene, scene.canvas.width / 2, this.deadText.y + scene.canvas.height / 10,"", {
       fontSize: Math.max(scene.canvas.width /40, 20) + "px",
       color: "#ff0000",
       align: "center",
       fontFamily: "Arial"
     }).setOrigin(0.5, 0);
 
+    // console.log(this.who, this.reason);
     this.scene.tweens.addCounter({
       from: 0,
       to: 100,
       onUpdate: (tween: Phaser.Tweens.Tween) => {
         var value = tween.getValue();
         // console.log(value);
-        this.moreData.setText((this.reason == "drown" ? this.who === null ? "You fell into the water!" : "Shot into water by "+this.who : "You were shot by "+this.who)+`\n\nSurvived Time: ${msToTime(this.survivedTime * (value / 100))}\nDragons shot: ${Math.round(this.shotDragons * (value/100))}\nPeppers collected: ${Math.ceil(this.peppers*(value/100))}`)
+        // console.log(this.who);
+        this.moreData.setText((this.reason == "drown" ? !this.who ? "You fell into the water!" : "Shot into water by "+this.who : "You were shot by "+this.who)+`\n\nSurvived Time: ${msToTime(this.survivedTime * (value / 100))}\nDragons shot: ${Math.round(this.shotDragons * (value/100))}\nPeppers collected: ${Math.ceil(this.peppers*(value/100))}`)
       },
       duration: 1000,
       ease: 'Linear',

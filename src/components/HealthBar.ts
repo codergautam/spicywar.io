@@ -6,8 +6,9 @@ class HealthBar extends Phaser.GameObjects.Container {
     value: number;
     value2: number;
     toLerp: number;
+    pointFix: boolean;
 
-    constructor (game: Phaser.Scene, x: number, y: number, width: number, height: number, preset: string | boolean=false)
+    constructor (game: Phaser.Scene, x: number, y: number, width: number, height: number, preset: string | boolean=false, pointFix: boolean=false)
     {
       
 
@@ -18,6 +19,7 @@ class HealthBar extends Phaser.GameObjects.Container {
   
         this.x = x;
         this.y = y;
+        this.pointFix = pointFix;
 
         this.maxValue = 100;
         this.value = 0;
@@ -52,12 +54,14 @@ class HealthBar extends Phaser.GameObjects.Container {
   
         //  BG
         this.bar.fillStyle(0x000000);
-        this.bar.fillRect(this.x, this.y, this.width, this.height);
-  
+
+        if(!this.pointFix) this.bar.fillRect(this.x, this.y, this.width, this.height);
+        else this.bar.fillRect(0, 0, this.width, this.height);
         //  Health
   
         this.bar.fillStyle(0xffffff);
-        this.bar.fillRect(this.x + 2, this.y + 2, this.width-4, this.height-4);
+        if(!this.pointFix) this.bar.fillRect(this.x + 2, this.y + 2, this.width-4, this.height-4);
+        else this.bar.fillRect(2, 2, this.width-4, this.height-4);
   
         if(!this.preset) {
         if (this.value/this.maxValue < 0.30)
@@ -77,7 +81,8 @@ class HealthBar extends Phaser.GameObjects.Container {
 
         var d1 = Math.floor((this.width-4) * (this.value/this.maxValue));
   
-        this.bar.fillRect(this.x + 2, this.y + 2, d1, this.height-4);
+       if(!this.pointFix) this.bar.fillRect(this.x + 2, this.y + 2, d1, this.height-4);
+         else this.bar.fillRect(2, 2, d1, this.height-4);
 
         if(this.preset == "domination") {
 
@@ -85,7 +90,8 @@ class HealthBar extends Phaser.GameObjects.Container {
 
             var d = Math.floor((this.width-4) * (this.value2/this.maxValue));
 
-            this.bar.fillRect(this.x + 2 + d1, this.y + 2, d, this.height-4);
+          if(!this.pointFix)  this.bar.fillRect(this.x + 2 + d1, this.y + 2, d, this.height-4);
+            else this.bar.fillRect(2 + d1, 2, d, this.height-4);
             
         }
     }

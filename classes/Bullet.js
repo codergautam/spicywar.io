@@ -17,12 +17,20 @@ class Bullet {
     if(player.needsFlip) {
       this.angle -= (Math.PI / 2) - 0.2;
     }
-    this.pos.x += (Math.cos(this.angle + Math.PI / 4) * this.speed * (75));
-    this.pos.y += (Math.sin(this.angle + Math.PI / 4) * this.speed * (75));
-    this.angle = player.lookAngle - 0.3;
+    const convert = (num, val, newNum) => (newNum * val) / num
+    const multiplier = convert(100, 75, player.bodySize);
+    this.pos.x += (Math.cos(this.angle + Math.PI / 4) * this.speed * (multiplier));
+    this.pos.y += (Math.sin(this.angle + Math.PI / 4) * this.speed * (multiplier));
+
+    var mult = player.speedLevel == 1 ? 1 : player.speedLevel == 2 ? 1.5 : 2;
+    this.speed = player.speed /1.5;
+    this.speed *= mult;
+    // console.log(offset)
+    this.angle = player.lookAngle - 0.3 + (offset * Math.PI / 180);
     if(player.needsFlip) {
       this.angle += (Math.PI / 2) - 1;
     }
+    
     this.createdAt = Date.now();
     this.owner = player.id;
     this.damage = player.damage;

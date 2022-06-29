@@ -47,6 +47,9 @@ class GameScene extends Phaser.Scene {
   cirle: Phaser.GameObjects.Arc;
   spicyMeter: HealthBar;
   spiceText: Phaser.GameObjects.Text;
+  background: Phaser.GameObjects.TileSprite;
+  lastKnownMyDisplayWidth: number;
+  minimap: Phaser.Cameras.Scene2D.Camera;
 
     constructor(callback: Function) {
       super("game");
@@ -68,10 +71,12 @@ class GameScene extends Phaser.Scene {
 
       // this.deathScreen = new DeathScreen(this);
 
+this.lastKnownMyDisplayWidth = 0;
       this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
 
       this.teamPicker = new TeamPicker(this);
       this.cameras.main.ignore(this.teamPicker);
+      // this.minimap.ignore(this.teamPicker);
 
       var team = "red";
       this.team = "none";
@@ -100,8 +105,28 @@ class GameScene extends Phaser.Scene {
       this.socket.emit("go", this.name, team); 
       this.team = `${team}`;
 
+      this.background = this.add.tileSprite(0, 0, this.canvas.width*1.1, this.canvas.height*1.1, "background");
+      this.uiCam.ignore(this.background);
+
+      this.minimap = this.cameras.add(200, 10, 100, 100).setZoom(0.05).setName('mini');
+      this.minimap.width = this.canvas.width/ 5;
+      this.minimap.height = this.canvas.width/ 5;
+      this.minimap.y = this.canvas.height - this.minimap.height - 10;
+      this.minimap.x = this.canvas.width - this.minimap.width - 10;
+      var mapSize = 4000
+      //calculate zoom
+      var zoom = this.minimap.width / mapSize;
+      this.minimap.setZoom(zoom);
+      this.minimap.setBackgroundColor(0x002244);
+      this.minimap.scrollX = -150;
+      this.minimap.scrollY = -150;
+
+      this.minimap.ignore(this.background);
+
+
       this.killCount = (this.add as any).rexBBCodeText(15, 10, "Stabs: 0", {
         fontFamily: "Georgia, \"Goudy Bookletter 1911\", Times, serif",
+        fill: "#000000",
       }).setFontSize(40).setDepth(101);
       this.killCount.addImage("pepper", {
         key: "pepper",
@@ -111,37 +136,58 @@ class GameScene extends Phaser.Scene {
       this.killCount.setText("[img=pepper] 0");
       this.killCount.setScrollFactor(0);
 
+
+
       this.cameras.main.ignore(this.killCount);
+      this.minimap.ignore(this.killCount);
+      
 
       this.map = new GameMap(this);
       this.dominationText = this.add.text(
         this.canvas.width / 2,
         this.canvas.height /100,
         "",
+        {
+          color: "#000000",
+        }
       ).setOrigin(0.5, 0).setFontSize(this.canvas.height / 20).setDepth(101);
 
       this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
       this.dominationBar.draw();
 
-      this.spicyMeter = new HealthBar(this, this.canvas.width / 8, (this.canvas.height / 2) - (this.canvas.height / 20), this.canvas.width / 2, this.canvas.height / 20, "spicy" ).setDepth(10);
+
+  
+
+      this.spicyMeter = new HealthBar(this, this.canvas.width / 4, this.canvas.height - this.canvas.height / 15, this.canvas.width / 2, this.canvas.height / 20, "spicy", true ).setDepth(10);
       this.spicyMeter.draw();
+
 
       this.spiceText = this.add.text(
         this.canvas.width / 2,
-        this.canvas.height - (this.canvas.height / 6),
+        this.spicyMeter.y,
         "🌶️ Spice Level: 1 (0%)",
-      ).setOrigin(0.5, 0).setFontSize(this.canvas.height / 20).setDepth(101);
+        {
+          color: "#000000",
+        }
+      ).setOrigin(0.5, 0).setFontSize(this.canvas.width / 30).setDepth(101);
+
+      this.spiceText.y -= this.spiceText.displayHeight;
+
 
       this.cameras.main.ignore(this.spiceText);
       this.cameras.main.ignore(this.spicyMeter);
       this.cameras.main.ignore(this.dominationBar);
       this.cameras.main.ignore(this.dominationText);
+      this.minimap.ignore([this.spiceText, this.spicyMeter, this.dominationBar, this.dominationText]);
       this.dominationBar.bar.x -= this.dominationBar.width / 2;
 
      const playerJoined = (data: FirstPlayerData) =>{
         this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
-        if(this.socket.id === data.id) this.cameras.main.startFollow(this.players.get(data.id));
-      }
+        if(this.socket.id === data.id) {
+         this.cameras.main.startFollow(this.players.get(data.id));
+        //  this.minimap.startFollow(this.players.get(data.id));
+              }
+        }
 
       this.socket.on("playerJoined", (data: FirstPlayerData) => {
         // console.log("playerJoined", data);
@@ -245,6 +291,12 @@ class GameScene extends Phaser.Scene {
             // console.log("youDied", reason, who, survivedTime, shotDragons, peppers);
             this.deathScreen = new DeathScreen(this, reason, who, survivedTime, shotDragons, peppers);
             me.destroy();
+            this.killCount.visible = false;
+            this.minimap.visible = false;
+            this.spiceText.visible = false;
+            this.spicyMeter.visible = false;
+            this.dominationBar.visible = false;
+            this.dominationText.visible = false;
         this.players.delete(this.socket.id);
 
         
@@ -281,6 +333,7 @@ class GameScene extends Phaser.Scene {
 						ease: "Bounce"
 					  });
 					this.cameras.main.ignore(text);
+          this.minimap.ignore(text);
       });
       var keys = (this.input.keyboard.addKeys({
         up: 'up',
@@ -300,71 +353,71 @@ class GameScene extends Phaser.Scene {
       right: false,
     }
 
-    keys.up.on('down', () => {
-      this.controller.up = true;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.down.on('down', () => {
-      this.controller.down = true;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.left.on('down', () => {
-      this.controller.left = true;
-      this.socket.emit("controller", this.controller);
-    }); 
-    keys.right.on('down', () => {
-      this.controller.right = true;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.w.on('down', () => {
-      this.controller.up = true;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.s.on('down', () => {
-      this.controller.down = true;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.a.on('down', () => {
-      this.controller.left = true;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.d.on('down', () => {
-      this.controller.right = true;
-      this.socket.emit("controller", this.controller);
-    });
+    // keys.up.on('down', () => {
+    //   this.controller.up = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.down.on('down', () => {
+    //   this.controller.down = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.left.on('down', () => {
+    //   this.controller.left = true;
+    //   this.socket.emit("controller", this.controller);
+    // }); 
+    // keys.right.on('down', () => {
+    //   this.controller.right = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.w.on('down', () => {
+    //   this.controller.up = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.s.on('down', () => {
+    //   this.controller.down = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.a.on('down', () => {
+    //   this.controller.left = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.d.on('down', () => {
+    //   this.controller.right = true;
+    //   this.socket.emit("controller", this.controller);
+    // });
 
-    keys.up.on('up', () => {
-      this.controller.up = false;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.down.on('up', () => {
-      this.controller.down = false;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.left.on('up', () => {
-      this.controller.left = false;
-      this.socket.emit("controller", this.controller);
-    }); 
-    keys.right.on('up', () => {
-      this.controller.right = false;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.w.on('up', () => {
-      this.controller.up = false;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.s.on('up', () => {
-      this.controller.down = false;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.a.on('up', () => {
-      this.controller.left = false;
-      this.socket.emit("controller", this.controller);
-    });
-    keys.d.on('up', () => {
-      this.controller.right = false;
-      this.socket.emit("controller", this.controller);
-    });
+    // keys.up.on('up', () => {
+    //   this.controller.up = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.down.on('up', () => {
+    //   this.controller.down = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.left.on('up', () => {
+    //   this.controller.left = false;
+    //   this.socket.emit("controller", this.controller);
+    // }); 
+    // keys.right.on('up', () => {
+    //   this.controller.right = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.w.on('up', () => {
+    //   this.controller.up = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.s.on('up', () => {
+    //   this.controller.down = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.a.on('up', () => {
+    //   this.controller.left = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
+    // keys.d.on('up', () => {
+    //   this.controller.right = false;
+    //   this.socket.emit("controller", this.controller);
+    // });
 
     this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2));
     //on mouse move
@@ -400,18 +453,48 @@ class GameScene extends Phaser.Scene {
 
       });
     }
-    if(this.spicyMeter && this.spicyMeter.visible) {
-    }
 if(this.dominationBar && this.dominationBar.visible) {
     this.dominationBar.destroy();
     this.dominationBar = new HealthBar(this, this.canvas.width / 8, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
     this.dominationBar.draw();
     this.cameras.main.ignore(this.dominationBar);
+    this.minimap.ignore(this.dominationBar);
 
     this.dominationText.x = this.canvas.width / 2;
     this.dominationText.y = this.canvas.height / 100;
     this.dominationText.setFontSize(this.canvas.height / 20);
 }
+
+  if(this.spicyMeter && this.spicyMeter.visible) {
+
+
+
+    this.spicyMeter.destroy();
+    this.spicyMeter = new HealthBar(this, this.canvas.width / 4, this.canvas.height - this.canvas.height / 15, this.canvas.width / 2, this.canvas.height / 20, "spicy", true ).setDepth(10);
+    this.spicyMeter.draw();
+
+    this.spiceText.x = this.canvas.width / 2;
+    this.spiceText.y = this.spicyMeter.y;
+
+    this.spiceText.setFontSize(this.canvas.width / 30);
+    this.spiceText.y -= this.spiceText.displayHeight;
+
+    this.cameras.main.ignore(this.spicyMeter);
+    this.minimap.ignore(this.spicyMeter);
+
+  }
+
+  if(this.minimap) {
+    this.minimap.width = this.canvas.width/ 5;
+    this.minimap.height = this.canvas.width/ 5;
+    this.minimap.y = this.canvas.height - this.minimap.height - 10;
+    this.minimap.x = this.canvas.width - this.minimap.width - 10;
+    var mapSize = 3000
+    //calculate zoom
+    var zoom = this.minimap.width / mapSize;
+    this.minimap.setZoom(zoom);
+    this.minimap.setBackgroundColor(0x002244);
+  }
 
     if(this.deathScreen && this.deathScreen.visible) {
       this.deathScreen.resize();
@@ -427,8 +510,14 @@ if(this.dominationBar && this.dominationBar.visible) {
   resize();
   }
   update(time: number, delta: number): void {
+    
    Array.from(this.players.values()).forEach(player => player.updateObject());
    Array.from(this.bullets.values()).forEach(bullet => bullet.updateObject());
+   if(this.background) {
+   this.background.setTilePosition(this.cameras.main.scrollX , this.cameras.main.scrollY );
+   this.background.x = this.cameras.main.scrollX + this.canvas.width*1.1 / 2;
+    this.background.y = this.cameras.main.scrollY + this.canvas.height*1.1 / 2;
+   }
 
    if(this.spicyMeter && this.spicyMeter.visible) {
     this.spicyMeter.updateContainer();
@@ -465,13 +554,44 @@ if(this.dominationBar && this.dominationBar.visible) {
       if(this.socket && this.players.has(this.socket.id)) {
       this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2))
 
+      //distance from center to mouse
+      var distance = Math.sqrt(Math.pow(this.game.input.mousePointer.x - (this.canvas.width / 2), 2) + Math.pow(this.game.input.mousePointer.y - (this.canvas.height / 2), 2));
+        var ratio = (this.canvas.width + this.canvas.height) / 2;
+        // console.log(distance/ratio)
+        if(distance/ratio >= 0.1) {
+          distance = Math.min(distance/ratio * 10, 1);
+        } else if (distance/ratio < 0.05) {
+          distance = 0;
+        } else {
+          distance = Math.min(distance/ratio * 4, 1);
+        }
+        console.log(distance);
+        
       // console.log(this.players.get(this.socket.id).needsFlip);
-      this.socket.emit("mouse", this.mouseAngle, this.players.get(this.socket.id).needsFlip);
+      this.socket.emit("mouse", this.mouseAngle, distance, this.players.get(this.socket.id).needsFlip);
       }
 
      if(this.team && !this.loadingText.visible) this.dominationText.setText(Math.round(totalDomination[this.team]) ==  Math.round(totalDomination[oppositeTeam]) ? "The game is tied!" : Math.round(totalDomination[this.team]) >  Math.round(totalDomination[oppositeTeam]) ? "Your team is winning!" : "Your team is losing!");
 
+     var show = 1500;
+     var me = this.players.get(this.socket.id);
+     if(me && me.displayWidth) this.lastKnownMyDisplayWidth = me.displayWidth;
 
+     show += this.lastKnownMyDisplayWidth * 5;
+    
+     
+     //var oldZoom = this.cameras.main.zoom;
+     var newZoom = Math.max(this.scale.width / show, this.scale.height / show);
+      this.cameras.main.setZoom(
+       newZoom
+     ); 
+
+     this.background.setTilePosition(this.cameras.main.scrollX , this.cameras.main.scrollY);
+      // this.background.setTileScale(this.cameras.main.zoom)
+     this.background.x = this.cameras.main.scrollX+this.canvas.width*1.005 / 2;
+      this.background.y = this.cameras.main.scrollY+this.canvas.height*1.005 / 2;
+      this.background.width = this.cameras.main.displayWidth*1.1;
+      this.background.height = this.cameras.main.displayHeight*1.1;
     }
   }
 }

@@ -10,6 +10,7 @@ interface PlayerData extends Data {
   hit: boolean;
   level: number;
   untilNextLevel: number;
+  bodySize: number;
 }
 interface FirstPlayerData extends PlayerData {
   name: string;

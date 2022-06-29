@@ -36,6 +36,7 @@ this.createRects(gameScene);
 
 this.scene.add.existing(this);
 this.scene.cameras.main.ignore(this);
+// (this.scene as GameScene).minimap.ignore(this);
   }
   resize() {
   //  console.log("ClassPicker update");

@@ -4,8 +4,8 @@ import { PlayerData } from "../helpers/Packets";
 import HealthBar from "./HealthBar";
 
 export default class Player extends Phaser.GameObjects.Container {
-  square: Phaser.GameObjects.Rectangle;
   gun: Phaser.GameObjects.Rectangle;
+  square: Phaser.GameObjects.Rectangle;
   bodySize: number;
   lastTick: number;
   toAngle: number;
@@ -14,14 +14,17 @@ export default class Player extends Phaser.GameObjects.Container {
   name: string;
   speed: number;
   team: string;
-  nameTag: Phaser.GameObjects.Text;
+  
   healthBar: HealthBar;
-  oldPeppers: number;
+  nameTag: Phaser.GameObjects.Text;
   image: Phaser.GameObjects.Image;
+
+  oldPeppers: number;
   needsFlip: boolean;
   realScaleX: number;
   oldLevel: number;
   oldUntilNextLevel: number[];
+  circle: Phaser.GameObjects.Ellipse;
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -57,14 +60,22 @@ export default class Player extends Phaser.GameObjects.Container {
       team == "red" ? "redDragon" : "blueDragon"
     ).setOrigin(0.5);
 
-    this.realScaleX = 0.5;
+    const convert = (num, val, newNum) => (newNum * val) / num
+
+    this.realScaleX = convert(100, 0.5, this.bodySize);
     this.image.setScale(this.realScaleX);
+
+    this.circle = new Phaser.GameObjects.Ellipse(this.scene, 0, 0, this.bodySize, this.bodySize, team == "red" ? 0xFF0000 : 0x0000FF).setDepth(4958).setOrigin(0.5);
+    // this.add(this.circle);
+    (this.scene as GameScene).uiCam.ignore(this.circle);
+    (this.scene as GameScene).cameras.main.ignore(this.circle);
+
 
     // this.image.;
     this.nameTag = new Phaser.GameObjects.Text(
       scene,
       0,
-      -0.75 * this.image.displayHeight,
+      0,
       name,
       {
         fontSize: "20px",
@@ -77,20 +88,11 @@ export default class Player extends Phaser.GameObjects.Container {
 
 
 
-    if (this.id == (this.scene as GameScene).socket.id)
+    // if (this.id == (this.scene as GameScene).socket.id)
       this.healthBar = new HealthBar(
         scene,
         0,
-        -0.6 * (this.image.displayHeight / 2),
-        75,
-        10,
-        false
-      ).setDepth(99);
-    else
-      this.healthBar = new HealthBar(
-        scene,
-        0,
-        -0.6 * (this.image.displayHeight / 2),
+       -1 * (this.image.displayHeight / 2),
         75,
         10,
         false
@@ -106,14 +108,36 @@ export default class Player extends Phaser.GameObjects.Container {
     // this.add(this.gun);
     this.add(this.image);
     this.add(this.healthBar);
+    this.add(this.circle)
     if (this.id != (this.scene as GameScene).socket.id) this.add(this.nameTag);
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
+    (this.scene as GameScene).minimap.ignore([this.healthBar, this.nameTag, this.image]);
+
   }
   tick(data: PlayerData, hit: boolean) {
     this.toAngle = data.lookAngle + Math.PI + 0.35;
     // if(this.needsFlip) this.toAngle -= Math.PI - 0.6;
     this.lastTick = Date.now();
+
+    const convert = (num, val, newNum) => (newNum * val) / num
+
+    this.realScaleX = convert(100, 0.5, data.bodySize);
+    console.log(data.bodySize);
+
+    if(this.realScaleX != this.image.scaleX) {
+      this.image.setScale(this.realScaleX);
+      this.circle.displayHeight = data.bodySize;
+      this.circle.displayWidth = data.bodySize;
+      this.circle.setFillStyle(this.id == (this.scene as GameScene).socket.id ? 0xFFFF00 : this.team == "red" ? 0xFF0000 : 0x0000FF);
+      this.healthBar.y = 0;
+      this.healthBar.bar.y = -1.1 * (this.image.displayHeight / 2);
+      this.nameTag.y = -1.3 * (this.image.displayHeight / 2);
+    } 
+
+    this.healthBar.maxValue = data.maxHealth;
+
+
     // this means we just got some data about this player
     this.scene.tweens.add({
       targets: this,
@@ -137,7 +161,10 @@ export default class Player extends Phaser.GameObjects.Container {
       //oldlevels sum
       let sum = 0;
       if(this.oldUntilNextLevel.length > 1) sum = this.oldUntilNextLevel[this.oldUntilNextLevel.length - 2];
-      (this.scene as GameScene).spiceText.setText("🌶️  Spice Level: "+data.level+" ("+Math.round((data.peppers - sum)/(data.untilNextLevel - sum)*100)+"%)");
+      if((data.peppers - sum)/(data.untilNextLevel - sum) > 1 && data.level == 10) {
+        (this.scene as GameScene).spiceText.setText("🌶️ FULLY SPICED UP 🌶️");
+
+      } else (this.scene as GameScene).spiceText.setText("🌶️  Spice Level: "+data.level+" ("+Math.round((data.peppers - sum)/(data.untilNextLevel - sum)*100)+"%)");
 
       (this.scene as GameScene).spicyMeter.setLerpValue((data.peppers - sum)/(data.untilNextLevel - sum)*100);
       this.oldLevel = data.level;
@@ -145,7 +172,7 @@ export default class Player extends Phaser.GameObjects.Container {
 
     if(this.id == (this.scene as GameScene).socket.id) {
 
-    (this.scene as GameScene).killCount.setText("[img=pepper] " + data.peppers);
+    (this.scene as GameScene).killCount.setText("[img=pepper] " + data.peppers ?? 0);
 
 
     if(this.oldPeppers != data.peppers) {
