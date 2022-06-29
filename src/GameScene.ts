@@ -432,7 +432,7 @@ this.lastKnownMyDisplayWidth = 0;
     setInterval(() => {
       var start = Date.now();
       this.socket.emit( 'ping', function clientCallback() {
-        // console.log( 'Websocket RTT: ' + (Date.now() - start) + ' ms' );
+         console.log( 'Websocket RTT: ' + (Date.now() - start) + ' ms' );
       });
     }, 2000);
 
@@ -565,7 +565,7 @@ if(this.dominationBar && this.dominationBar.visible) {
         } else {
           distance = Math.min(distance/ratio * 4, 1);
         }
-        console.log(distance);
+        // console.log(distance);
         
       // console.log(this.players.get(this.socket.id).needsFlip);
       this.socket.emit("mouse", this.mouseAngle, distance, this.players.get(this.socket.id).needsFlip);

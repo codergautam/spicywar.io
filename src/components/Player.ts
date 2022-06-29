@@ -123,7 +123,7 @@ export default class Player extends Phaser.GameObjects.Container {
     const convert = (num, val, newNum) => (newNum * val) / num
 
     this.realScaleX = convert(100, 0.5, data.bodySize);
-    console.log(data.bodySize);
+    // console.log(data.bodySize);
 
     if(this.realScaleX != this.image.scaleX) {
       this.image.setScale(this.realScaleX);
@@ -143,7 +143,7 @@ export default class Player extends Phaser.GameObjects.Container {
       targets: this,
       x: data.pos.x,
       y: data.pos.y,
-      duration: hit ? 200 : 100,
+      duration: hit ? 300 : 200,
       ease: "Power2",
       onComplete: () => {
       

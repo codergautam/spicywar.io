@@ -63,12 +63,15 @@ io.on("connection", async (socket) => {
 
 //tick rooms
 var tps = 0;
+var actps = 0;
 var secondStart = Date.now();
 setInterval(() => {
   roomlist.tickAll();
   tps++;
   if(Date.now() - secondStart > 1000) {
     // console.log("tps: " + tps);
+    actps = tps;
+    console.log(actps)
     tps = 0;
     secondStart = Date.now();
   }
