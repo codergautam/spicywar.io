@@ -31,6 +31,11 @@ class TitleScene extends Phaser.Scene {
       var name = box.value.trim();
       if(!name || name.length == 0) return;
 
+      this.nameBox.destroy();
+      this.text.destroy();
+      this.rect.destroy();
+      
+
       this.callback(name);
     });
 

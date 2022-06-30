@@ -38,12 +38,14 @@ module.exports = class Island {
       capturedBy: this.capturedBy,
       id: this.id,
       capturedPercentage: this.capturedPercentage,
-      capturingBy: this.capturingBy
+      capturingBy: this.capturingBy,
+      people: this.people,
     }
   }
   tick(diff, room) {
     if(!this.canBeCaptured) return;
     var players = Array.from(room.players.values()).filter(player => this.isIn(player.pos));
+    this.people = players.map(player => player.id);
     io.getio().to(room.id).emit("islandUpdate", this.getSendObject());
     if(this.lastPepperGrew + 1000 < Date.now()) this.pepperGrew(room);
     if(players.length < 1 && this.captureState == 1) {

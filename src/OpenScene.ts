@@ -40,6 +40,9 @@ class OpenScene extends Phaser.Scene {
       this.load.image("again", "/assets/images/again.jpeg");
       this.load.image("pepper", "/assets/images/pepper.png");
 
+      this.load.image("blueFireball", "/assets/images/blueFireball.png");
+      this.load.image("redFireball", "/assets/images/redFireball.png");
+
       // this.load.plugin('rexbbcodetextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexbbcodetextplugin.min.js', true);
 
 

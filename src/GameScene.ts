@@ -54,6 +54,7 @@ class GameScene extends Phaser.Scene {
   minimap: Phaser.Cameras.Scene2D.Camera;
   leaderboard: any;
   gamePoint: {x: number, y: number};
+  captureText: Phaser.GameObjects.Text;
 
     constructor(callback: Function) {
       super("game");
@@ -80,6 +81,8 @@ this.lastKnownMyDisplayWidth = 0;
 
       this.teamPicker = new TeamPicker(this);
       this.cameras.main.ignore(this.teamPicker);
+
+
       // this.minimap.ignore(this.teamPicker);
 
       var team = "red";
@@ -127,6 +130,16 @@ this.lastKnownMyDisplayWidth = 0;
       this.minimap.scrollY = -150;
 
       this.minimap.ignore(this.background);
+
+      this.captureText = this.add.text(this.canvas.width / 2, this.canvas.height / 5, "", {
+        fontSize: Math.min(this.canvas.width/10, 70)+"px",
+        fontFamily: "Arial",
+        color: "#000000",
+        align: "center"
+      }).setDepth(10);
+      this.captureText.setOrigin(0.5);
+      this.cameras.main.ignore(this.captureText);
+      this.minimap.ignore(this.captureText);
 
 
       this.killCount = new BBCodeText(this, 15, 10, "Stabs: 0", {
@@ -204,7 +217,46 @@ this.lastKnownMyDisplayWidth = 0;
         if(this.islands.find(i => i.id === data.id)) {
           var island = this.islands.find(i => i.id === data.id);
           island.setTeam(data.capturedBy);
-          island.setPercent(data.capturedPercentage, data.capturedBy);
+          island.setPercent(data.capturedPercentage, data.capturingBy);
+          // console.log(data);
+
+          if(data.people.includes(this.socket.id) && this.team && data.capturedBy == "none") {
+           if(Math.ceil(data.capturedPercentage) < 100) {
+            this.captureText.setData('island', data.id);
+            if(data.capturingBy == this.team) this.captureText.setText("Capturing..." + Math.round(data.capturedPercentage) + "%");
+            else this.captureText.setText("Destroying..." + Math.round(data.capturedPercentage) + "%");
+           }
+           else {
+            this.captureText.setText("");
+            var t = this.add.text(this.canvas.width / 2, this.canvas.height / 5, "Island Captured!", {
+              fontSize: Math.min(this.canvas.width/10, 70)+"px",
+              fontFamily: "Arial",
+              color: "#000000",
+              align: "center"
+            }).setDepth(10).setAlpha(0);
+            t.setOrigin(0.5);
+            this.cameras.main.ignore(t);
+            this.minimap.ignore(t);
+            this.tweens.add({
+              targets: t,
+              alpha: 1,
+              onComplete: () => {
+                this.tweens.add({
+                  targets: t,
+                  alpha: 0,
+                  duration: 1000,
+                  onComplete: () => {
+                    t.destroy();
+                  }
+                });
+              }
+            });
+           }
+          } else {
+            // console.log(this.captureText.data)
+            if(this.captureText.getData('island') == data.id) this.captureText.setText("");
+          }
+          
 
         }
       })
@@ -266,16 +318,16 @@ this.lastKnownMyDisplayWidth = 0;
            this.uiCam.ignore(r);
         });
       });
-      this.socket.on("islandCaptured", (id: number, team: string) => {
-        // console.log("islandCaptured", id, team);
-        this.islands.find(i => i.id === id).setTeam(team);
+      // this.socket.on("islandCaptured", (id: number, team: string) => {
+      //   // console.log("islandCaptured", id, team);
+      //   this.islands.find(i => i.id === id).setTeam(team);
         
-      });
-      this.socket.on("islandCapturing", (id: number, team: string, percent: number) => {
-        // console.log("islandCapturing", id, team, percent);
-        this.islands.find(i => i.id === id).setPercent(percent, team);
+      // });
+      // this.socket.on("islandCapturing", (id: number, team: string, percent: number) => {
+      //   // console.log("islandCapturing", id, team, percent);
+      //   this.islands.find(i => i.id === id).setPercent(percent, team);
 
-      })
+      // })
       // this.socket.on("corners", (data: {x: number, y: number}[]) => {
       //   data.forEach(d => {
       //     var el = this.add.ellipse(d.x, d.y, 5, 5, 0x00ff00).setDepth(10);
@@ -303,6 +355,7 @@ this.lastKnownMyDisplayWidth = 0;
        this.spiceText.visible = false;
        this.leaderboard.visible = false;
        this.spicyMeter.visible = false;
+       this.captureText.setText("");
       //  this.dominationBar.visible = false;
       this.dominationBar.bar.visible = false;
        this.dominationText.visible = false;
@@ -326,14 +379,14 @@ this.lastKnownMyDisplayWidth = 0;
         //first letter capital
         type = type.charAt(0).toUpperCase() + type.slice(1);
         if(type == "Bullet") type += "s";
-        var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type} upgraded!`, {fontSize: "40px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
+        var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type} upgraded!`, {fontSize: "50px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
         this.cameras.main.ignore(text);
         this.minimap.ignore(text);
         console.log(type, level);
         this.tweens.add({
           targets: text,
           alpha: 1,
-          y: this.canvas.height / 4,
+          y: this.canvas.height / 3.5,
           duration: 500,
           onComplete: () => {
             setTimeout(() => {
@@ -511,6 +564,10 @@ this.lastKnownMyDisplayWidth = 0;
 
       });
     }
+
+    this.captureText?.setFontSize(Math.min(this.canvas.width / 10, 70));
+    this.captureText?.setX(this.canvas.width / 2 );
+    this.captureText?.setY(this.canvas.height / 5 );
 if(this.dominationBar && this.dominationBar.visible) {
     this.dominationBar.destroy();
     if(!(this.deathScreen && this.deathScreen.visible)) {

@@ -29,6 +29,7 @@ interface IslandData {
   size: number;
   capturedPercentage: number;
   capturingBy: string;
+  people: string[];
 }
 interface BridgeData {
   width: number,

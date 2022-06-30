@@ -172,8 +172,9 @@ export default class Player extends Phaser.GameObjects.Container {
 
     if(this.id == (this.scene as GameScene).socket.id) {
 
+      if(data.peppers >= 0) {
     (this.scene as GameScene).killCount.setText("[img=pepper] " + data.peppers ?? 0);
-
+      }
 
     if(this.oldPeppers != data.peppers) {
       this.scene.tweens.add({

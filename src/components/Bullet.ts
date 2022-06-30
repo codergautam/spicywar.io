@@ -4,12 +4,13 @@ import { BulletData, Data } from "../helpers/Packets";
 
 export default class Bullet extends Phaser.GameObjects.Container {
   id: string;
-  bullet: Phaser.GameObjects.Rectangle;
+  bullet: Phaser.GameObjects.Image;
   lastRecievedData: number;
   goTo: { x: number; y: number; };
   speed: number;
   mAngle: number;
   lastUpdate: number;
+  team: string;
   constructor(scene: Phaser.Scene, data: BulletData) {
     super(scene);
     this.id = data.id;
@@ -25,11 +26,16 @@ export default class Bullet extends Phaser.GameObjects.Container {
     }
 
 
-    this.bullet = new Phaser.GameObjects.Ellipse(scene, 0, 0, 10, 10, 0x00FFFF).setOrigin(0.5);
+    var s = scene as GameScene;
+    this.team = "red";
+    if(s.players.has(data.owner)) this.team = s.players.get(data.owner).team;
+
+    this.bullet = new Phaser.GameObjects.Image(scene, 0, 0, this.team+"Fireball").setOrigin(0.5);
+    this.bullet.setScale(0.05);
     this.bullet.setRotation(data.angle+(Math.PI/2));
     this.lastRecievedData = Date.now();
     this.add(this.bullet);
-    (this.scene as GameScene).uiCam.ignore(this);
+    s.uiCam.ignore(this);
     this.scene.add.existing(this);
 
     this.lastUpdate = Date.now();
