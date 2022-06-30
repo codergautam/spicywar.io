@@ -16,7 +16,7 @@ var config = {
         mode: Phaser.Scale.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
     },
-    type: Phaser.CANVAS,
+    type: Phaser.AUTO,
     
 };
 var mobile = window.matchMedia("(pointer: coarse)").matches;
