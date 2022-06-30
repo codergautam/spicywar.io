@@ -36,7 +36,7 @@ export default class Leaderboard extends Phaser.GameObjects.Container {
     players = players.sort((a,b) => {
       return b.oldPeppers - a.oldPeppers;
     });
-    var text = "[size=32][b]Leaderboard[/b][/size]\n"
+    var text = `[size=${gameScene.canvas.width / 50}][b]Leaderboard[/b][/size]\n`
     var here = false;
     players.forEach((player, i) => {
       if(i < 10) {

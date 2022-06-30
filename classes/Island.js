@@ -44,6 +44,7 @@ module.exports = class Island {
   tick(diff, room) {
     if(!this.canBeCaptured) return;
     var players = Array.from(room.players.values()).filter(player => this.isIn(player.pos));
+    io.getio().to(room.id).emit("islandUpdate", this.getSendObject());
     if(this.lastPepperGrew + 1000 < Date.now()) this.pepperGrew(room);
     if(players.length < 1 && this.captureState == 1) {
       this.capturedPercentage -= (diff / 50) * 0.5;

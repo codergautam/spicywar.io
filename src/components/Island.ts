@@ -34,21 +34,22 @@ export default class Island extends Phaser.GameObjects.Container {
       none: 0
     }
     if(this.capturingCircle && this.capturingCircle.visible) {
-      d[this.capturingCircle.fillColor == 0xFF0000 ? "red" : "blue"] = this.capturingCircle.scaleX;
+      d[this.capturingCircle.fillColor == 0xFF3632 ? "red" : "blue"] = this.capturingCircle.scaleX;
       d.none = 1 - d.red - d.blue;
     } else {
       d[this.capturedBy] = 1;
     }
+    // console.log(d);
     return d;
   }
   setTeam(team: string) {
     this.capturingCircle.setVisible(false);
-    this.island.setFillStyle(team == "red" ? 0xFF0000 : team == "none" ? 0x838579 : 0x0000FF);
+    this.island.setFillStyle(team == "red" ? 0xFF3632 : team == "none" ? 0x838579 : 0x009dff);
     this.capturedBy = team;
   }
   setPercent(percent: number, team: string) {
     // console.log(team)
-    this.capturingCircle.setFillStyle(team == "red" ? 0xFF0000 : team == "none" ? 0x838579 : 0x0000FF);
+    this.capturingCircle.setFillStyle(team == "red" ? 0xFF3632 : team == "none" ? 0x838579 : 0x0096ff);
     this.capturingCircle.setVisible(true);
     this.capturingCircle.setScale(percent/100);
   }

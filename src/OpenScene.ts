@@ -22,7 +22,7 @@ class OpenScene extends Phaser.Scene {
 
       //load images
 
-      this.load.image("title", "/assets/images/bg.jpeg");
+      this.load.image("title", "/assets/images/title.png");
       
       this.load.html("namebox", "/assets/html/name.html");
       this.load.image("dragon", "/assets/images/dragon.png");

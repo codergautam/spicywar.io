@@ -63,7 +63,7 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
 
     this.box = new Phaser.GameObjects.Rectangle(scene, scene.canvas.width / 2, scene.canvas.height / 2, scene.canvas.width / 2, scene.canvas.height / 1.5, 0xffffff);
     this.deadText = new Phaser.GameObjects.Text(scene, scene.canvas.width / 2, scene.canvas.height / 2, "You died", {
-      fontSize: Math.max(scene.canvas.width / 25, 40) + "px",
+      fontSize: Math.min(scene.canvas.width / 15, scene.canvas.height / 10) + "px",
       color: "#ff0000",
       align: "center",
       fontFamily: "Arial"
@@ -71,7 +71,7 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
     }).setOrigin(0.5, 0);
     
     this.moreData = new Phaser.GameObjects.Text(scene, scene.canvas.width / 2, this.deadText.y + scene.canvas.height / 10,"", {
-      fontSize: Math.max(scene.canvas.width /40, 20) + "px",
+      fontSize: Math.min(scene.canvas.width /30, scene.canvas.height / 20) + "px",
       color: "#ff0000",
       align: "center",
       fontFamily: "Arial"

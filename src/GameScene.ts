@@ -53,6 +53,7 @@ class GameScene extends Phaser.Scene {
   lastKnownMyDisplayWidth: number;
   minimap: Phaser.Cameras.Scene2D.Camera;
   leaderboard: any;
+  gamePoint: {x: number, y: number};
 
     constructor(callback: Function) {
       super("game");
@@ -120,7 +121,8 @@ this.lastKnownMyDisplayWidth = 0;
       //calculate zoom
       var zoom = this.minimap.width / mapSize;
       this.minimap.setZoom(zoom);
-      this.minimap.setBackgroundColor(0x002244);
+      // this.minimap.setBackgroundColor(0x002244);
+      this.minimap.setBackgroundColor(this.team == "blue" ? 0x002244 : 0x440000);
       this.minimap.scrollX = -150;
       this.minimap.scrollY = -150;
 
@@ -155,7 +157,7 @@ this.lastKnownMyDisplayWidth = 0;
         {
           color: "#000000",
         }
-      ).setOrigin(0.5, 0).setFontSize(this.canvas.height / 20).setDepth(101);
+      ).setOrigin(0.5, 0).setFontSize(this.canvas.width / 30).setDepth(101);
 
       this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
       this.dominationBar.draw();
@@ -198,6 +200,14 @@ this.lastKnownMyDisplayWidth = 0;
         // console.log("playerJoined", data);
         playerJoined(data);
       });
+      this.socket.on("islandUpdate", (data: IslandData) => {
+        if(this.islands.find(i => i.id === data.id)) {
+          var island = this.islands.find(i => i.id === data.id);
+          island.setTeam(data.capturedBy);
+          island.setPercent(data.capturedPercentage, data.capturedBy);
+
+        }
+      })
       this.socket.on("playerLeft", (id: string) => {
         if(this.players.has(id)){
           if(this.players.get(id)) {
@@ -291,6 +301,7 @@ this.lastKnownMyDisplayWidth = 0;
        this.killCount.visible = false;
        this.minimap.visible = false;
        this.spiceText.visible = false;
+       this.leaderboard.visible = false;
        this.spicyMeter.visible = false;
       //  this.dominationBar.visible = false;
       this.dominationBar.bar.visible = false;
@@ -315,7 +326,7 @@ this.lastKnownMyDisplayWidth = 0;
         //first letter capital
         type = type.charAt(0).toUpperCase() + type.slice(1);
         if(type == "Bullet") type += "s";
-        var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type} upgraded!`, {fontSize: "32px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
+        var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type} upgraded!`, {fontSize: "40px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
         this.cameras.main.ignore(text);
         this.minimap.ignore(text);
         console.log(type, level);
@@ -335,7 +346,7 @@ this.lastKnownMyDisplayWidth = 0;
                   text.destroy();
                 }
               });
-            }, 1000);
+            }, 2000);
           }
         });
 
@@ -458,14 +469,22 @@ this.lastKnownMyDisplayWidth = 0;
     //   this.socket.emit("controller", this.controller);
     // });
 
-    this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2));
+    this.input.on("pointermove", (pointer: PointerEvent) => {
+      this.gamePoint = {x: pointer.x, y: pointer.y};
+    });
+    console.log("gamePoint", this.gamePoint);
+
+    this.mouseAngle =  Math.atan2(this.gamePoint?.y ?? this.game.input.activePointer.y - (this.canvas.height /2), this.gamePoint?.x ?? this.game.input.activePointer.x - (this.canvas.width / 2));
     //on mouse move
 
-    this.input.on("pointerdown", () => {
+    this.input.on("pointerdown", (p: PointerEvent) => {
+      console.log("pointerdown");
       this.socket.emit("down", true);
+      this.gamePoint = {x: p.x, y: p.y};
     })
-    this.input.on("pointerup", () => {
+    this.input.on("pointerup", (p: PointerEvent) => {
       this.socket.emit("down", false);
+      this.gamePoint = {x: p.x, y: p.y};
     });
 
     setInterval(() => {
@@ -494,14 +513,17 @@ this.lastKnownMyDisplayWidth = 0;
     }
 if(this.dominationBar && this.dominationBar.visible) {
     this.dominationBar.destroy();
+    if(!(this.deathScreen && this.deathScreen.visible)) {
     this.dominationBar = new HealthBar(this, this.canvas.width / 8, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
+
     this.dominationBar.draw();
+   }
     this.cameras.main.ignore(this.dominationBar);
     this.minimap.ignore(this.dominationBar);
 
     this.dominationText.x = this.canvas.width / 2;
     this.dominationText.y = this.canvas.height / 100;
-    this.dominationText.setFontSize(this.canvas.height / 20);
+    this.dominationText.setFontSize(this.canvas.width / 30);
 }
 
   if(this.spicyMeter && this.spicyMeter.visible) {
@@ -510,8 +532,9 @@ if(this.dominationBar && this.dominationBar.visible) {
 
     this.spicyMeter.destroy();
     this.spicyMeter = new HealthBar(this, this.canvas.width / 4, this.canvas.height - this.canvas.height / 15, this.canvas.width / 2, this.canvas.height / 20, "spicy", true ).setDepth(10);
+    if(this.deathScreen && this.deathScreen.visible ) {
     this.spicyMeter.draw();
-
+    }
     this.spiceText.x = this.canvas.width / 2;
     this.spiceText.y = this.spicyMeter.y;
 
@@ -528,11 +551,11 @@ if(this.dominationBar && this.dominationBar.visible) {
     this.minimap.height = this.canvas.width/ 5;
     this.minimap.y = this.canvas.height - this.minimap.height - 10;
     this.minimap.x = this.canvas.width - this.minimap.width - 10;
-    var mapSize = 3000
+    var mapSize = 4000
     //calculate zoom
     var zoom = this.minimap.width / mapSize;
     this.minimap.setZoom(zoom);
-    this.minimap.setBackgroundColor(0x002244);
+    this.minimap.setBackgroundColor(this.team == "blue" ? 0x002244 : 0x442200);
   }
 
     if(this.deathScreen && this.deathScreen.visible) {
@@ -591,8 +614,8 @@ if(this.dominationBar && this.dominationBar.visible) {
       // console.log(this.team);
 
       if(this.socket && this.players.has(this.socket.id)) {
-      this.mouseAngle =  Math.atan2(this.game.input.mousePointer.y - (this.canvas.height /2), this.game.input.mousePointer.x - (this.canvas.width / 2))
-
+    this.mouseAngle =  Math.atan2((this.gamePoint?.y ?? this.game.input.activePointer.y) - (this.canvas.height /2), (this.gamePoint?.x ?? this.game.input.activePointer.x) - (this.canvas.width / 2));
+// console.log(this.game.input.activePointer.x, this.game.input.activePointer.y, this.gamePoint);
       //distance from center to mouse
       var distance = Math.sqrt(Math.pow(this.game.input.mousePointer.x - (this.canvas.width / 2), 2) + Math.pow(this.game.input.mousePointer.y - (this.canvas.height / 2), 2));
         var ratio = (this.canvas.width + this.canvas.height) / 2;
@@ -611,9 +634,9 @@ if(this.dominationBar && this.dominationBar.visible) {
       }
 
      if(this.team && !this.loadingText.visible) this.dominationText.setText(Math.round(totalDomination[this.team]) ==  Math.round(totalDomination[oppositeTeam]) ? "The game is tied!" : Math.round(totalDomination[this.team]) >  Math.round(totalDomination[oppositeTeam]) ? "Your team is winning!" : "Your team is losing!");
-
+    }
      var show = 1200;
-     var me = this.players.get(this.socket.id);
+     var me = this.players.get(this.socket?.id);
     //  console.log(me?.image);
      if(me && me.image) this.lastKnownMyDisplayWidth = me.image?.displayWidth;
 
@@ -627,16 +650,16 @@ if(this.dominationBar && this.dominationBar.visible) {
       this.cameras.main.setZoom(
        newZoom
      ); 
-
-     this.background.setTilePosition(this.cameras.main.scrollX , this.cameras.main.scrollY);
+if(this.background) {
+     this.background?.setTilePosition(this.cameras.main.scrollX , this.cameras.main.scrollY);
       // this.background.setTileScale(this.cameras.main.zoom)
      this.background.x = this.cameras.main.scrollX+this.canvas.width*1.005 / 2;
       this.background.y = this.cameras.main.scrollY+this.canvas.height*1.005 / 2;
       this.background.width = this.cameras.main.displayWidth*1.1;
       this.background.height = this.cameras.main.displayHeight*1.1;
-
+}
       // console.log(this.background.tileScaleX, this.background.tileScaleY);
-    }
+    
   }
 }
 
