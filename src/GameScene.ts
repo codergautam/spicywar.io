@@ -614,7 +614,7 @@ if(this.dominationBar && this.dominationBar.visible) {
 
      var show = 1200;
      var me = this.players.get(this.socket.id);
-     console.log(me?.image);
+    //  console.log(me?.image);
      if(me && me.image) this.lastKnownMyDisplayWidth = me.image?.displayWidth;
 
     //  console.log(this.lastKnownMyDisplayWidth);
@@ -635,7 +635,7 @@ if(this.dominationBar && this.dominationBar.visible) {
       this.background.width = this.cameras.main.displayWidth*1.1;
       this.background.height = this.cameras.main.displayHeight*1.1;
 
-      console.log(this.background.tileScaleX, this.background.tileScaleY);
+      // console.log(this.background.tileScaleX, this.background.tileScaleY);
     }
   }
 }

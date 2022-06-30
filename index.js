@@ -71,7 +71,7 @@ setInterval(() => {
   if(Date.now() - secondStart > 1000) {
     // console.log("tps: " + tps);
     actps = tps;
-    console.log(actps)
+    console.log("TPS", actps)
     tps = 0;
     secondStart = Date.now();
   }
