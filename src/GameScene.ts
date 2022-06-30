@@ -674,7 +674,7 @@ if(this.dominationBar && this.dominationBar.visible) {
     this.mouseAngle =  Math.atan2((this.gamePoint?.y ?? this.game.input.activePointer.y) - (this.canvas.height /2), (this.gamePoint?.x ?? this.game.input.activePointer.x) - (this.canvas.width / 2));
 // console.log(this.game.input.activePointer.x, this.game.input.activePointer.y, this.gamePoint);
       //distance from center to mouse
-      var distance = Math.sqrt(Math.pow(this.game.input.mousePointer.x - (this.canvas.width / 2), 2) + Math.pow(this.game.input.mousePointer.y - (this.canvas.height / 2), 2));
+      var distance = Math.sqrt(Math.pow(this.gamePoint?.x - (this.canvas.width / 2), 2) + Math.pow(this.gamePoint?.y - (this.canvas.height / 2), 2));
         var ratio = (this.canvas.width + this.canvas.height) / 2;
         // console.log(distance/ratio)
         if(distance/ratio >= 0.1) {
