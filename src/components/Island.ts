@@ -7,6 +7,7 @@ export default class Island extends Phaser.GameObjects.Container {
   id: number;
   capturingCircle: Phaser.GameObjects.Ellipse;
   flag: Phaser.GameObjects.Image;
+  background: Phaser.GameObjects.Image;
   constructor(scene: Phaser.Scene, data: IslandData) {
     super(scene);
     this.x = data.pos.x;
@@ -22,6 +23,9 @@ export default class Island extends Phaser.GameObjects.Container {
 
     (this.scene as GameScene).minimap.ignore(this.flag);
 
+    this.background = new Phaser.GameObjects.Image(scene, 0, 0, "grass").setOrigin(0.5);
+    this.background.setScale(data.size/1900);
+
 
     // if(this.capturedBy == "red") console.log(this.id + " is captured by red");
     this.island = new Phaser.GameObjects.Ellipse(scene, 0, 0, data.size, data.size, data.capturedBy == "none" ? 0x838579: data.capturedBy == "red" ? 0xFF0000 : 0x0000FF).setOrigin(0.5).setDepth(1);
@@ -33,7 +37,7 @@ export default class Island extends Phaser.GameObjects.Container {
     this.add(this.island);
     this.add(this.capturingCircle);
     this.add(this.flag);
-
+    if(data.size > 1000) this.add(this.background);
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
   }
@@ -56,6 +60,7 @@ export default class Island extends Phaser.GameObjects.Container {
     this.capturingCircle.setVisible(false);
     this.island.setFillStyle(team == "red" ? 0xFF3632 : team == "none" ? 0x838579 : 0x009dff);
     this.capturedBy = team;
+    
 
     this.flag.setTexture(team == "red" ? "redFlag" : "blueFlag");
     if(team != "none") {

@@ -3,6 +3,7 @@ const io = require("../helpers/io");
 const intersect = require("intersects");
 const Island = require("./Island");
 const Bridge = require("./Bridge");
+const Pepper = require("./Pepper");
 
 class Room {
   constructor() {
@@ -13,6 +14,7 @@ class Room {
     this.bullets = [];
     this.islands = [];
     this.bridges = [];
+    this.peppers = new Map();
 
     this.islands.push(new Island(
       "circle",
@@ -176,6 +178,15 @@ class Room {
     this.players.forEach((player) => {
 
       player.tick(tickDiff);
+
+      [...this.peppers.values()].forEach((pepper) => {
+        if(pepper.touchingPlayer(player)) {
+          player.peppers ++;
+          this.peppers.delete(pepper.id);
+          ioinstance.emit("pepperCollected", pepper.id, player.id);
+        };
+      });
+
       ioinstance.to(this.id).emit("playerUpdate", player.getSendObject());
       if(player.hit) player.hit = false;
 
@@ -248,6 +259,14 @@ class Room {
     this.islands.forEach((island) => {
       island.tick(tickDiff, this);
     });
+
+    if(this.peppers.size < 10) {
+      var p = new Pepper(this.islands[0]);
+      this.peppers.set(p.id, p);
+    }
+
+    //emit to all players
+    ioinstance.to(this.id).emit("peppers", [...this.peppers.values()].map((pepper) => pepper.getSendObject()));
     
   }
 

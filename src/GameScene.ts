@@ -7,6 +7,7 @@ import HealthBar from "./components/HealthBar";
 import Island from "./components/Island";
 import Leaderboard from "./components/Leaderboard";
 import GameMap from "./components/Map";
+import Pepper from "./components/Pepper";
 import Player from "./components/Player";
 import TeamPicker from "./components/TeamPicker";
 import { Data, PlayerData, FirstPlayerData, BulletData, IslandData, BridgeData } from "./helpers/Packets";
@@ -71,6 +72,11 @@ class GameScene extends Phaser.Scene {
   levelUpShowing: boolean;
   shownFly: boolean;
   enterKey: Phaser.Input.Keyboard.Key;
+  shotText: BBCodeText;
+  killCombo: number;
+  peppers: Map<string, Pepper>;
+    titleMusic: Phaser.Sound.BaseSound;
+  pick: Phaser.Sound.BaseSound;
 
     constructor(callback: Function) {
       super("game");
@@ -86,6 +92,9 @@ class GameScene extends Phaser.Scene {
       this.islands = [];
       this.clickedTeam = false;
       this.levelQueue = [];
+      this.killCombo = 0;
+      this.peppers = new Map();
+
     }
 
     create() {
@@ -110,7 +119,10 @@ class GameScene extends Phaser.Scene {
       this.fellwater = this.sound.add("fellwater");
       this.gothit = this.sound.add("gothit");
       this.hitsomeone = this.sound.add("hitsomeone");
-      this.shoot = this.sound.add("shoot");
+      this.shoot = this.sound.add("shoot", {
+        volume: 0.25,
+      });
+      this.pick= this.sound.add("pick");
       this.captured = this.sound.add("captured");
 
       // this.deathScreen = new DeathScreen(this);
@@ -202,6 +214,7 @@ this.lastKnownMyDisplayWidth = 0;
 
         console.log("go");
 
+
       this.teamPicker = new TeamPicker(this);
       this.cameras.main.ignore(this.teamPicker);
 
@@ -225,6 +238,8 @@ this.lastKnownMyDisplayWidth = 0;
           duration: 1000,
           ease: "Linear",
           onComplete: () => {
+        this.titleMusic.stop();
+
           start();
           },
         });
@@ -244,6 +259,8 @@ this.lastKnownMyDisplayWidth = 0;
           duration: 1000,
           ease: "Linear",
           onComplete: () => {
+        this.titleMusic.stop();
+
           start();
           // console.log("team");
           },
@@ -372,6 +389,39 @@ this.minimap.setVisible(false);
               }
         }
 
+        this.socket.on("peppers", (data: Data[]) => {
+          data.forEach((d) => {
+            if(!this.peppers.has(d.id)) {
+              this.peppers.set(d.id, new Pepper(this, d.pos.x, d.pos.y, d.id).setDepth(2));
+            }
+          })
+        })
+
+        this.socket.on("pepperCollected", (id, who) => {
+          if(this.peppers.has(id)) {
+            var pepper=  this.peppers.get(id);
+            if(who == this.socket.id) this.pick.play();
+            var startPos = JSON.parse(JSON.stringify({x: pepper.x, y: pepper.y}));
+            this.tweens.addCounter({
+              from: 0,
+              to: 1,
+              duration: 100,
+              onUpdate: (tween) => {
+                var val = tween.getValue();
+                this.peppers.get(id).setAlpha(1-val);
+                if(this.players.has(who)) {
+                  var player = this.players.get(who)
+                  const lerp = (a, b, t) => a + (b - a) * t;
+                  this.peppers.get(id).setPosition(lerp(startPos.x, player.x, val), lerp(startPos.y, player.y, val));
+                }
+              },
+              onComplete: () => {
+                this.peppers.get(id).destroy();
+                this.peppers.delete(id);
+              }
+            })
+          }
+        })
       this.socket.on("playerJoined", (data: FirstPlayerData) => {
         // console.log("playerJoined", data);
         playerJoined(data);
@@ -604,8 +654,25 @@ this.minimap.setVisible(false);
 
         const convert = (num, val, newNum) => (newNum * val) / num;
         var fontsize = convert(1366, 64, this.canvas.width);
-					var text = new BBCodeText(this, this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
-        this.add.existing(text);
+        if(this.shotText && this.shotText.visible && this.tweens.isTweening(this.shotText)) {
+          this.shotText.destroy();
+          this.killCombo ++;
+        } else {
+          this.killCombo = 1;
+        }
+        if(this.killCombo > 1) {
+          var text= [
+            "Double",
+            "Triple",
+            "Quadruple",
+            "Pentuple",
+          ]
+          if(text[this.killCombo-2])
+          txt = `[b]${text[this.killCombo-2]} Kill![/b]`;
+          else txt = `[b]x${this.killCombo} Kill![/b]`;
+        }
+					this.shotText = new BBCodeText(this, this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
+        this.add.existing(this.shotText);
 
 						const completeCallback = (text) => {
 							this.tweens.add({
@@ -622,16 +689,16 @@ this.minimap.setVisible(false);
             
 
 					this.tweens.add({
-						targets: text,
+						targets: this.shotText,
 						alpha: 1,
 						y: this.canvas.height - this.canvas.height / 6,
 						completeDelay: 250,
 						duration: 750,
-						onComplete: ()=>completeCallback(text),
+						onComplete: ()=>completeCallback(this.shotText),
 						ease: "Bounce"
 					  });
-					this.cameras.main.ignore(text);
-          this.minimap.ignore(text);
+					this.cameras.main.ignore(this.shotText);
+          this.minimap.ignore(this.shotText);
       });
       this.vidText = this.add.text(this.canvas.width /2, this.canvas.height / 3, "", {fontSize: "50px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
       var keys = (this.input.keyboard.addKeys({
@@ -770,6 +837,8 @@ this.minimap.setVisible(false);
           duration: 1000,
           ease: "Linear",
           onComplete: () => {
+        this.titleMusic.stop();
+
           start();
           // console.log("team");
           },
@@ -792,6 +861,8 @@ this.minimap.setVisible(false);
           duration: 1000,
           ease: "Linear",
           onComplete: () => {
+        this.titleMusic.stop();
+
           start();
           // console.log("team");
           },

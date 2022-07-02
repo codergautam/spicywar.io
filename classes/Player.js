@@ -6,7 +6,7 @@ const Bullet = require("./Bullet");
 
 const levels = require("../helpers/levels")
 
-var mousemove = false;
+var mousemove = true;
 
 class Player {
   constructor(name, id=idgen(), socket=undefined) {
@@ -29,6 +29,7 @@ class Player {
     this.whoLastHit = null;
     this.healAmount = 0.005;
     this.needsFlip = false;
+    this.lastShoot = 0;
 
     this.force = 0.5;
 
@@ -253,8 +254,9 @@ class Player {
     // pos.y -= Math.sin(Math.PI) * this.speed * (150);
     // this.socket.emit("test", pos);
 
-    if(!this.down) return;
+    if(!this.down || Date.now() - this.lastShoot < 1000/10) return;
     var room = roomlist.getRoom(this.roomId);
+    this.lastShoot = Date.now();
     this.down = false;
     room.bullets.push(new Bullet(this, 0));
 

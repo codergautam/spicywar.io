@@ -33,8 +33,9 @@ var scale = "scale(1)";         // IE 9
  document.body.style.transform = scale;     // General
 
 
-var titleScene = new TitleScene((name: string) => {
+var titleScene = new TitleScene((name: string, titleMusic: Phaser.Sound.BaseSound) => {
     gameScene.name = name;
+    gameScene.titleMusic = titleMusic;
     game.scene.switch("title", "game");
     return name;
 });

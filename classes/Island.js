@@ -30,6 +30,13 @@ module.exports = class Island {
     });
 
   }
+  getRandomPoint() {
+   var radius = (this.size /2) * Math.sqrt(Math.random());
+    var angle = Math.random() * 2 * Math.PI;
+    var x = this.pos.x + (radius * Math.cos(angle));
+    var y = this.pos.y +( radius * Math.sin(angle));
+    return {x: x, y: y};
+  }
   getSendObject() {
     return {
       shape: this.shape,

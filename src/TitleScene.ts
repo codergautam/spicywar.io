@@ -9,6 +9,7 @@ class TitleScene extends Phaser.Scene {
   mobile: boolean;
   rect: Phaser.GameObjects.Rectangle;
   enterKey: Phaser.Input.Keyboard.Key;
+  titleMusic: Phaser.Sound.BaseSound;
   constructor(callback: Function) {
     super("title");
     this.callback = callback;
@@ -16,7 +17,12 @@ class TitleScene extends Phaser.Scene {
   preload() {
   }
   create() {
-    this.rect = this.add.rectangle(0,0,0,0, 0xB19CB8).setOrigin(0.5).setScale(2).setDepth(10);
+    this.titleMusic = this.sound.add("titleMusic", {
+      volume: 0.5,
+      loop: true
+    });
+    this.titleMusic.play();
+    this.rect = this.add.rectangle(0,0,0,0, 0xffffe0).setOrigin(0.5).setScale(2).setDepth(10);
     this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER, false);
     this.nameBox = this.add.dom(0,0).createFromCache("namebox").setScale(0);
     
@@ -67,7 +73,7 @@ const click = () => {
   window.localStorage.setItem("name", name);
 
 
-  this.callback(name);
+  this.callback(name, this.titleMusic);
 }
 
 this.enterKey.on("down", click);
