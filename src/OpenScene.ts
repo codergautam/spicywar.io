@@ -7,6 +7,7 @@ class OpenScene extends Phaser.Scene {
     loadText: Phaser.GameObjects.Text;
     canvas: any;
     mobile: boolean;
+  progressText: Phaser.GameObjects.Text;
     constructor() {
       super("open");
     }
@@ -15,17 +16,29 @@ class OpenScene extends Phaser.Scene {
         this.e = true;
         this.background = this.add.rectangle(0, 0, document.documentElement.clientWidth, document.documentElement.clientHeight, 0x2e74e6).setOrigin(0).setScrollFactor(0, 0).setScale(2);
    this.loadText =  this.add.text(0,0,"Loading").setOrigin(0.5,0.5);
+   this.progressText = this.add.text(0,0,"please wait.").setOrigin(0.5,0.5);
       
       this.loadText.setFontSize(this.canvas.width/20);
+      this.progressText.setFontSize(this.canvas.width/40);
       this.loadText.x = this.canvas.width/2;
       this.loadText.y = this.canvas.height/2;
+      this.progressText.x = this.canvas.width/2;
+      this.progressText.y = this.canvas.height/2 + this.canvas.height/10;
+      this.load.on("fileprogress", function(file, progress){
+        // var key = file.key;
+        var loader = this.load;
+var total = loader.totalToLoad;
+var remainder = loader.list.size + loader.inflight.size;
+var progress = (1 - (remainder / total) as any);
+        this.progressText.setText((progress*100).toFixed(1)+"%");
+    }, this);
 
       //load images
 
       this.load.image("title", "/assets/images/title.png");
       
       this.load.html("namebox", "/assets/html/name.html");
-      this.load.image("dragon", "/assets/images/dragon.png");
+      // this.load.image("dragon", "/assets/images/dragon.png");
 
       // this.load.image("redPlayer", "/assets/images/redPlayer.png");
       // this.load.image("bluePlayer", "/assets/images/bluePlayer.png");
@@ -35,6 +48,9 @@ class OpenScene extends Phaser.Scene {
 
       this.load.image("blueDragon", "/assets/images/bluedragon.png");
       this.load.image("redDragon", "/assets/images/reddragon.png");
+
+      this.load.image("blueWinged", "/assets/images/blueWinged.png");
+      this.load.image("redWinged", "/assets/images/redWinged.png");
       
       this.load.image("home", "/assets/images/home.png");
       this.load.image("again", "/assets/images/again.jpeg");

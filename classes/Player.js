@@ -101,6 +101,7 @@ class Player {
       bodySize: this.bodySize,
       maxHealth: this.maxHealth,
       health: this.health,
+      canFly: this.canFly
       
     }
   }
@@ -116,6 +117,7 @@ class Player {
       untilNextLevel: this.untilNextLevel,
       bodySize: this.bodySize,
       maxHealth: this.maxHealth,
+      canFly: this.canFly,
     };
   }
   getCorners(extraDiff = 1) {
@@ -211,19 +213,19 @@ class Player {
       var choice = this.level % 4;
       if(choice == 0) {
         this.speedLevel++;
-        console.log("speed level up");
+        // console.log("speed level up");
         this.socket.emit("levelUp", "speed", this.speedLevel);
       } else if(choice == 1) {
         this.sizeLevel++;
-        console.log("size");
+        // console.log("size");
         this.socket.emit("levelUp", "size", this.sizeLevel);
       } else if(choice == 2) {
         this.bulletLevel++;
-        console.log("bullet");
+        // console.log("bullet");
         this.socket.emit("levelUp", "bullet", this.bulletLevel);
       } else if(choice == 3) {
         this.healthLevel++;
-        console.log("health");
+        // console.log("health");
         this.socket.emit("levelUp", "health", this.healthLevel);
         this.health =  this.maxHealth = 100 + (this.healthLevel == 1 ? 0 : this.healthLevel == 2 ? 40 : 100);
       }

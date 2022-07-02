@@ -647,7 +647,7 @@ this.minimap.setVisible(false);
         // console.log("shotDragon", who, id, reason);
         var txt = `[b][color=#e82a1f]Shot [/color][color=#0000FF]${who}[/color][/b]`;
 
-        console.log(reason)
+        // console.log(reason)
 
         if(reason == "drown") this.fellwater.play();
         else this.killedsomeone.play();
@@ -788,13 +788,13 @@ this.minimap.setVisible(false);
     this.input.on("pointermove", (pointer: PointerEvent) => {
       this.gamePoint = {x: pointer.x, y: pointer.y};
     });
-    console.log("gamePoint", this.gamePoint);
+    // console.log("gamePoint", this.gamePoint);
 
     this.mouseAngle =  Math.atan2(this.gamePoint?.y ?? this.game.input.activePointer.y - (this.canvas.height /2), this.gamePoint?.x ?? this.game.input.activePointer.x - (this.canvas.width / 2));
     //on mouse move
 
     this.input.on("pointerdown", (p: PointerEvent) => {
-      console.log("pointerdown");
+      // console.log("pointerdown");
       this.socket.emit("down", true);
       this.gamePoint = {x: p.x, y: p.y};
     })

@@ -4,18 +4,21 @@ export default class TeamBox extends Phaser.GameObjects.Container {
   rect: Phaser.GameObjects.Rectangle;
   image: Phaser.GameObjects.Image;
   text: Phaser.GameObjects.Text;
+  lastUpdate: number;
   constructor(scene: GameScene, x: number, y: number, team: string) {
     super(scene as Scene);
-
+    this.lastUpdate = Date.now();
     this.x = x;
     this.y = y;
 
     this.rect = new Phaser.GameObjects.Rectangle(scene, this.x, this.y, Math.min(scene.canvas.width / 1.5, 800), scene.canvas.height / 3, 0x00ffff).setOrigin(0.5, 0.5).setDepth(1);
     this.image = new Phaser.GameObjects.Image(scene, this.x-10, this.y, team+"Dragon").setOrigin(0.5, 0.5).setDepth(2);
     var text = "";
+    this.setData("team", team);
     fetch('/teams').then(res => res.json()).then(teams => {
+      this.lastUpdate = Date.now();
       text = (team +"\n"+teams[team].playerCount+" players");
-      console.log(teams);
+      // console.log(teams);
       this.text = new Phaser.GameObjects.Text(scene, this.x, this.y -10, text, {
         fontSize: Math.min(scene.canvas.width / 20, 70)+"px",
         color: team == "red" ? "#ff0000" : "#0000FF",
@@ -48,8 +51,24 @@ export default class TeamBox extends Phaser.GameObjects.Container {
  
 
   }
-  update() {
+  preUpdate() {
     //  console.log("ClassPicker update");
+    // console.log("Sus")
+    if(Date.now() - this.lastUpdate > 2000 && this.rect && this.rect.visible ) {
+      fetch('/teams').then(res => res.json()).then(teams => {
+        this.lastUpdate = Date.now();
+        this.setData("count", teams[this.getData("team")].playerCount);
+        var oppositeTeamCount = teams[this.getData("team") == "red" ? "blue" : "red"].playerCount;
+        this.setData("oppositeCount", oppositeTeamCount);
+        this.text.setText(this.getData("team") +"\n"+this.getData("count")+" players");
+        if((oppositeTeamCount == 0 && this.getData("count") != 0)|| (this.getData("count") - oppositeTeamCount >= 2 && oppositeTeamCount != 0)) {
+          this.rect.setFillStyle(0x808080);
+        } else {
+          this.rect.setFillStyle(0x00ffff);
+        }
+      });
+    }
+
 
   }
 }

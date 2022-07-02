@@ -92,13 +92,13 @@ export default class Player extends Phaser.GameObjects.Container {
       this.healthBar = new HealthBar(
         scene,
         0,
-       -1 * (this.image.displayHeight / 2),
+       0,
         75,
         10,
-        false
+        false,
+        true
       ).setDepth(99);
-
-    this.healthBar.x -= this.healthBar.displayWidth / 4;
+      this.healthBar.bar.x = -this.healthBar.width / 2;
 
     this.healthBar.setHealth(100);
 
@@ -120,8 +120,25 @@ export default class Player extends Phaser.GameObjects.Container {
     // if(this.needsFlip) this.toAngle -= Math.PI - 0.6;
     this.lastTick = Date.now();
 
-    const convert = (num, val, newNum) => (newNum * val) / num
+ 
 
+    if(data.canFly) {
+      this.image.setTexture(this.team+"Winged");
+    }
+
+    const convert = (num, val, newNum) => (newNum * val) / num
+    // console.log(convert(100, 40, this.bodySize));
+    this.nameTag.setFontSize(convert(100, 40, data.bodySize));
+    this.healthBar.bar.setScale(convert(100, 1, data.bodySize));
+    // this.healthBar.setScale(convert(100, 1, data.bodySize));
+
+    this.healthBar.bar.x = -this.healthBar.width / 2;
+    this.healthBar.bar.x -= this.healthBar.bar.scale == 1 ? 0 : this.healthBar.bar.scale == 1.5 ? 15 : 30;
+    // this.healthBar
+
+    // this.nameTag.x = 0
+    
+    
     this.realScaleX = convert(100, 0.5, data.bodySize);
     // console.log(data.bodySize);
 
@@ -166,6 +183,7 @@ export default class Player extends Phaser.GameObjects.Container {
         if(!(this.scene as GameScene).shownFly) {
           (this.scene as GameScene).shownFly = true;
           (this.scene as GameScene).levelQueue.push("Flying activated!!! 🚀");
+          this.image.setTexture(this.team+"Winged");
         }
 
       } else (this.scene as GameScene).spiceText.setText("🌶️  Spice Level: "+data.level+" ("+Math.round((data.peppers - sum)/(data.untilNextLevel - sum)*100)+"%)");

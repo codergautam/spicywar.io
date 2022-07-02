@@ -11,6 +11,7 @@ interface PlayerData extends Data {
   level: number;
   untilNextLevel: number;
   bodySize: number;
+  canFly: boolean;
 }
 interface FirstPlayerData extends PlayerData {
   name: string;

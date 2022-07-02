@@ -87,4 +87,8 @@ this.scene.cameras.main.ignore(this);
   this.createRects(this.scene as GameScene);
     
   }
+  preUpdate() {
+    this.rect1.preUpdate();
+    this.rect2.preUpdate();
+  }
 }

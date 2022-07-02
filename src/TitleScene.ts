@@ -46,7 +46,7 @@ class TitleScene extends Phaser.Scene {
     this.text = this.add.text(0, 0, "Spicywar.io", {
       fontSize: "64px",
       color: "#000000",
-      fontFamily: "Finlandica",
+      fontFamily: "Finlandica, Arial",
     }).setOrigin(0.5).setDepth(15).setScrollFactor(0, 0).setScale(0);
 
 
