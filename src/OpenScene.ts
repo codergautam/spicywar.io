@@ -51,6 +51,9 @@ var progress = (1 - (remainder / total) as any);
 
       this.load.image("blueWinged", "/assets/images/blueWinged.png");
       this.load.image("redWinged", "/assets/images/redWinged.png");
+
+      //introbutton
+      this.load.image("introButton", "/assets/images/intro.png");
       
       this.load.image("home", "/assets/images/home.png");
       this.load.image("again", "/assets/images/again.jpeg");

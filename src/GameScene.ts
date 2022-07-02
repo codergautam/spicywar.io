@@ -125,6 +125,8 @@ class GameScene extends Phaser.Scene {
       this.pick= this.sound.add("pick");
       this.captured = this.sound.add("captured");
 
+      
+
       // this.deathScreen = new DeathScreen(this);
 if(window.localStorage.getItem("story") == "true"){
 } else {
