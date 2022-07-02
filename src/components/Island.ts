@@ -6,6 +6,7 @@ export default class Island extends Phaser.GameObjects.Container {
   capturedBy: string;
   id: number;
   capturingCircle: Phaser.GameObjects.Ellipse;
+  flag: Phaser.GameObjects.Image;
   constructor(scene: Phaser.Scene, data: IslandData) {
     super(scene);
     this.x = data.pos.x;
@@ -14,6 +15,13 @@ export default class Island extends Phaser.GameObjects.Container {
     this.capturedBy = data.capturedBy;
     this.capturingCircle = new Phaser.GameObjects.Ellipse(scene, 0, 0, data.size, data.size, 0x00FFFF).setOrigin(0.5).setVisible(false).setDepth(1);
     this.id = data.id;
+
+    this.flag = new Phaser.GameObjects.Image(scene, 0, -200, "redFlag").setOrigin(0.5).setVisible(false).setVisible(false);
+    // set scale to island size
+    this.flag.setScale(data.size/1000);
+
+    (this.scene as GameScene).minimap.ignore(this.flag);
+
 
     // if(this.capturedBy == "red") console.log(this.id + " is captured by red");
     this.island = new Phaser.GameObjects.Ellipse(scene, 0, 0, data.size, data.size, data.capturedBy == "none" ? 0x838579: data.capturedBy == "red" ? 0xFF0000 : 0x0000FF).setOrigin(0.5).setDepth(1);
@@ -24,6 +32,8 @@ export default class Island extends Phaser.GameObjects.Container {
     
     this.add(this.island);
     this.add(this.capturingCircle);
+    this.add(this.flag);
+
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
   }
@@ -46,6 +56,40 @@ export default class Island extends Phaser.GameObjects.Container {
     this.capturingCircle.setVisible(false);
     this.island.setFillStyle(team == "red" ? 0xFF3632 : team == "none" ? 0x838579 : 0x009dff);
     this.capturedBy = team;
+
+    this.flag.setTexture(team == "red" ? "redFlag" : "blueFlag");
+    if(team != "none") {
+      this.flag.setVisible(true);
+
+      // this.flag.setAlpha(0);
+      if(!this.scene.tweens.isTweening(this.flag)) {
+      this.scene.tweens.add({
+        targets: this.flag,
+        alpha: 1,
+        duration: 1000,
+        ease: 'Power2',
+      });
+    }
+
+
+    }
+    else {
+      this.flag.setAlpha(1);
+      if(!this.scene.tweens.isTweening(this.flag)) {
+      this.scene.tweens.add({
+        targets: this.flag,
+        alpha: 0,
+        duration: 1000,
+        ease: 'Power2',
+        onComplete: () => {
+          this.flag.setVisible(false);
+        }
+      });
+    }
+
+      // this.flag.setVisible(false);
+
+    }
   }
   setPercent(percent: number, team: string) {
     // console.log(team)

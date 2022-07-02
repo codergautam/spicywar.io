@@ -55,6 +55,22 @@ class GameScene extends Phaser.Scene {
   leaderboard: any;
   gamePoint: {x: number, y: number};
   captureText: Phaser.GameObjects.Text;
+  vid: Phaser.GameObjects.Video;
+  vidText: any;
+  killedsomeone: Phaser.Sound.BaseSound;
+  dead: Phaser.Sound.BaseSound;
+  water: Phaser.Sound.BaseSound;
+  fellwater: Phaser.Sound.BaseSound;
+  gothit: Phaser.Sound.BaseSound;
+  hitsomeone: Phaser.Sound.BaseSound;
+  shoot: Phaser.Sound.BaseSound;
+  captured: Phaser.Sound.BaseSound;
+  clickedTeam: boolean;
+  skipButton: Phaser.GameObjects.Image;
+  levelQueue: string[];
+  levelUpShowing: boolean;
+  shownFly: boolean;
+  enterKey: Phaser.Input.Keyboard.Key;
 
     constructor(callback: Function) {
       super("game");
@@ -63,21 +79,128 @@ class GameScene extends Phaser.Scene {
     
     }
     preload() {
-
+      this.shownFly = false;
       this.ready = false;
       this.players = new Map();
       this.bullets = new Map();
       this.islands = [];
+      this.clickedTeam = false;
+      this.levelQueue = [];
     }
 
     create() {
 
+      this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
 
+      //EXAMPLE CONFIG - SOUND
+
+    //   {
+    //     mute: false,
+    //     volume: 1,
+    //     rate: 1,
+    //     detune: 0,
+    //     seek: 0,
+    //     loop: false,
+    //     delay: 0
+    // }
+
+      this.killedsomeone = this.sound.add("killedSomeone");
+      this.dead = this.sound.add("dead");
+      this.water = this.sound.add("water");
+      this.fellwater = this.sound.add("fellwater");
+      this.gothit = this.sound.add("gothit");
+      this.hitsomeone = this.sound.add("hitsomeone");
+      this.shoot = this.sound.add("shoot");
+      this.captured = this.sound.add("captured");
 
       // this.deathScreen = new DeathScreen(this);
-
+if(window.localStorage.getItem("story") == "true"){
+} else {
 this.lastKnownMyDisplayWidth = 0;
-      this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
+
+
+     this.vid = this.add.video(0, 0, "intro").setOrigin(0.5).setDepth(0);
+     this.vid.setData("stop", 0);
+      this.vid.play();
+
+      this.skipButton = this.add.image(this.canvas.width, this.canvas.height, "skip").setOrigin(1).setDepth(1).setInteractive().setScale(this.canvas.width /4000);
+  this.cameras.main.ignore(this.skipButton);
+
+      this.skipButton.on("pointerdown", () => {
+        this.uiCam.fadeOut(500);
+        // go();
+        window.localStorage.setItem("story", "true");
+        this.uiCam.on("camerafadeoutcomplete", () => {
+          go();
+          this.uiCam.fadeIn(1000);
+        this.vid.destroy();
+        this.vidText.destroy();
+        this.skipButton.destroy();
+        });
+      });
+
+      this.vidText = this.add.text(10, this.canvas.height, "Click anywhere to continue", {
+        fontSize: "40px",
+        color: "#fff",
+        align: "center",
+        fontFamily: "Finlandica"
+      }).setOrigin(0, 1).setDepth(1).setVisible(false);
+
+      this.cameras.main.ignore(this.vidText);
+
+    
+      this.vid.on("complete", () => {
+        go();
+        this.vid.destroy();
+        this.vidText.destroy();
+        this.skipButton.destroy();
+        window.localStorage.setItem("story", "true");
+      });
+      this.cameras.main.ignore(this.vid);
+
+      const click = () => {
+        if(this.vid && this.vid.visible) {
+          var vidEnds = [3, 7, 11, 15, 19, 23];
+          // var vidStops = [1, 5.7, 9, 14, 17.5, 23];
+          console.log(this.vid.getCurrentTime());
+          this.vid.setPaused(false);
+          console.log("Playing");
+          this.vidText.setVisible(false);
+
+
+         
+          if(!vidEnds[this.vid.getData("stop")-1] || (vidEnds[this.vid.getData("stop")-1] - this.vid.getCurrentTime())  < 0) {
+           if(!vidEnds[this.vid.getData("stop")]) {
+            go( )
+            this.vid.destroy();
+            this.vidText.destroy();
+            this.skipButton.destroy();
+            window.localStorage.setItem("story", "true");
+           } else {
+            this.vid.setCurrentTime("+"+(vidEnds[this.vid.getData("stop")] - this.vid.getCurrentTime()));
+           }
+          } else this.vid.setCurrentTime("+"+(vidEnds[this.vid.getData("stop")-1] - this.vid.getCurrentTime()));
+
+          console.log("+"+(vidEnds[this.vid.getData("stop")-1] - this.vid.getCurrentTime()))
+          
+        }
+      }
+
+      this.input.on("pointerdown", () => {
+        click();
+      })
+
+      //on enter click
+      this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER, false);
+      this.enterKey.on("down", () => {
+        click();
+      });
+    }
+
+
+      const go = () => {
+
+        console.log("go");
 
       this.teamPicker = new TeamPicker(this);
       this.cameras.main.ignore(this.teamPicker);
@@ -89,15 +212,42 @@ this.lastKnownMyDisplayWidth = 0;
       this.team = "none";
 
       this.teamPicker.rect1.rect.on("pointerdown", () => {
+        if(this.clickedTeam) return;
+        if((this.teamPicker.rect1.getData("oppositeCount") == 0 && this.teamPicker.rect1.getData("count") != 0)|| this.teamPicker.rect1.getData("oppositeCount") - this.teamPicker.rect1.getData("count") >= 2) {
+          return;
+        }
+        this.clickedTeam = true;
         team = "red";
-        this.teamPicker.visible = false;
-        start();
+        // this.teamPicker.visible = false;
+        this.tweens.add({
+          targets: this.teamPicker,
+          alpha: 0,
+          duration: 1000,
+          ease: "Linear",
+          onComplete: () => {
+          start();
+          },
+        });
       });
       this.teamPicker.rect2.rect.on("pointerdown", () => {
+        if(this.clickedTeam) return;
+        if((this.teamPicker.rect2.getData("oppositeCount") == 0 && this.teamPicker.rect2.getData("count") != 0)|| this.teamPicker.rect2.getData("oppositeCount") - this.teamPicker.rect2.getData("count") >= 2) {
+          return;
+        }
+        this.clickedTeam = true;
         team = "blue";
-        this.teamPicker.visible = false;
-        start();
+        // this.teamPicker.visible = false;
 
+        this.tweens.add({
+          targets: this.teamPicker,
+          alpha: 0,
+          duration: 1000,
+          ease: "Linear",
+          onComplete: () => {
+          start();
+          // console.log("team");
+          },
+        });
       });
 
       
@@ -108,12 +258,16 @@ this.lastKnownMyDisplayWidth = 0;
           this.canvas.height / 2,
           "Connecting...",
         ).setOrigin(0.5);
+        this.uiCam.fadeIn(100)
+        this.cameras.main.ignore(this.loadingText);
+        this.loadingText.setFontSize(this.canvas.width / 20);
       this.socket = io();
       this.socket.emit("go", this.name, team); 
       this.team = `${team}`;
 
-      this.background = this.add.tileSprite(0, 0, this.canvas.width*1.1, this.canvas.height*1.1, "background");
-      this.uiCam.ignore(this.background);
+      this.background = this.add.tileSprite(0, 0, this.canvas.width, this.canvas.height, "background").setOrigin(0).setDepth(-10);
+				// this.background.fixedToCamera = true;
+        this.uiCam.ignore(this.background);
 
       this.minimap = this.cameras.add(200, 10, 100, 100).setZoom(0.05).setName('mini');
       this.minimap.width = this.canvas.width/ 5;
@@ -128,14 +282,14 @@ this.lastKnownMyDisplayWidth = 0;
       this.minimap.setBackgroundColor(this.team == "blue" ? 0x002244 : 0x440000);
       this.minimap.scrollX = -150;
       this.minimap.scrollY = -150;
-
+this.minimap.setVisible(false);
       this.minimap.ignore(this.background);
 
       this.captureText = this.add.text(this.canvas.width / 2, this.canvas.height / 5, "", {
         fontSize: Math.min(this.canvas.width/10, 70)+"px",
-        fontFamily: "Arial",
+        fontFamily: "Finlandica",
         color: "#000000",
-        align: "center"
+        align: "center",
       }).setDepth(10);
       this.captureText.setOrigin(0.5);
       this.cameras.main.ignore(this.captureText);
@@ -145,7 +299,8 @@ this.lastKnownMyDisplayWidth = 0;
       this.killCount = new BBCodeText(this, 15, 10, "Stabs: 0", {
         fontFamily: "Georgia, \"Goudy Bookletter 1911\", Times, serif",
         fill: "#000000",
-      }).setFontSize(40).setDepth(101);
+      }).setFontSize(40).setDepth(101).setVisible(false);
+    
       this.add.existing(this.killCount);
       this.killCount.addImage("pepper", {
         key: "pepper",
@@ -169,17 +324,22 @@ this.lastKnownMyDisplayWidth = 0;
         "",
         {
           color: "#000000",
+          fontFamily: "Finlandica",
         }
       ).setOrigin(0.5, 0).setFontSize(this.canvas.width / 30).setDepth(101);
 
       this.dominationBar = new HealthBar(this, this.canvas.width / 4, this.canvas.height /25, this.canvas.width / 2, this.canvas.height / 20, "domination" ).setDepth(10);
       this.dominationBar.draw();
 
+      this.dominationBar.setVisible(false);
+
 
   
 
       this.spicyMeter = new HealthBar(this, this.canvas.width / 4, this.canvas.height - this.canvas.height / 15, this.canvas.width / 2, this.canvas.height / 20, "spicy", true ).setDepth(10);
       this.spicyMeter.draw();
+
+      this.spicyMeter.setVisible(false);
 
 
       this.spiceText = this.add.text(
@@ -188,8 +348,11 @@ this.lastKnownMyDisplayWidth = 0;
         "🌶️ Spice Level: 1 (0%)",
         {
           color: "#000000",
+          fontFamily: "Finlandica",
         }
       ).setOrigin(0.5, 0).setFontSize(this.canvas.width / 30).setDepth(101);
+
+      this.spiceText.setVisible(false);
 
       this.spiceText.y -= this.spiceText.displayHeight;
 
@@ -228,12 +391,14 @@ this.lastKnownMyDisplayWidth = 0;
            }
            else {
             this.captureText.setText("");
+            if(data.capturedBy == this.team || data.capturingBy == this.team) {
             var t = this.add.text(this.canvas.width / 2, this.canvas.height / 5, "Island Captured!", {
               fontSize: Math.min(this.canvas.width/10, 70)+"px",
               fontFamily: "Arial",
               color: "#000000",
               align: "center"
             }).setDepth(10).setAlpha(0);
+            this.captured.play();
             t.setOrigin(0.5);
             this.cameras.main.ignore(t);
             this.minimap.ignore(t);
@@ -251,6 +416,7 @@ this.lastKnownMyDisplayWidth = 0;
                 });
               }
             });
+          }
            }
           } else {
             // console.log(this.captureText.data)
@@ -263,22 +429,59 @@ this.lastKnownMyDisplayWidth = 0;
       this.socket.on("playerLeft", (id: string) => {
         if(this.players.has(id)){
           if(this.players.get(id)) {
+            this.tweens.add({
+              targets: this.players.get(id),
+              alpha: 0,
+              duration: 500,
+              onComplete: () => {
+
           this.players.get(id).destroy();
+
           this.players.delete(id);
+              },
+            });
+
           }
         }
       });
       this.socket.on("players", (data: FirstPlayerData[]) => {
         this.ready = true;
+
+        if(this.loadingText && this.loadingText.visible) {
+
+          this.killCount.setVisible(true);
+          this.minimap.setVisible(true);
+          this.spiceText.setVisible(true);
+          this.spicyMeter.setVisible(true);
+          this.dominationText.setVisible(true);
+          this.dominationBar.setVisible(true);
+          
+
+
         this.loadingText.destroy();
+        this.cameras.main.fadeIn(500);
+        this.uiCam.fadeIn(500);
+        this.minimap.fadeIn(500);
+        }
 
         for (const player of data) {
           if(!this.players.has(player.id)) playerJoined(player);
           else this.players.get(player.id).tick(player, false);
       }
       });
+      this.socket.on("gotHit", () => {
+        this.gothit.play();
+      });
+      this.socket.on("hitSomeone", () => {
+        this.hitsomeone.play();
+      })
       this.socket.on("addBullet", (data: BulletData) => {
-        if(!this.bullets.has(data.id)) this.bullets.set(data.id, new Bullet(this, data).setDepth(1));
+        if(!this.bullets.has(data.id)) {
+          this.bullets.set(data.id, new Bullet(this, data).setDepth(1));
+          if(data.owner == this.socket?.id) {
+            this.shoot.play();
+          }
+        }
       });
       this.socket.on("removeBullet", (id: string) => {
         if(this.bullets.has(id)) {
@@ -359,6 +562,10 @@ this.lastKnownMyDisplayWidth = 0;
       //  this.dominationBar.visible = false;
       this.dominationBar.bar.visible = false;
        this.dominationText.visible = false;
+       
+       if(reason != "drown") this.dead.play();
+       else this.water.play();
+
        this.tweens.add({
           targets: me,
           alpha: 0,
@@ -375,38 +582,26 @@ this.lastKnownMyDisplayWidth = 0;
           },
         });     
       });
+     
       this.socket.on("levelUp", (type, level) => {
         //first letter capital
         type = type.charAt(0).toUpperCase() + type.slice(1);
         if(type == "Bullet") type += "s";
-        var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type} upgraded!`, {fontSize: "50px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
-        this.cameras.main.ignore(text);
-        this.minimap.ignore(text);
-        console.log(type, level);
-        this.tweens.add({
-          targets: text,
-          alpha: 1,
-          y: this.canvas.height / 3.5,
-          duration: 500,
-          onComplete: () => {
-            setTimeout(() => {
-              this.tweens.add({
-                targets: text,
-                alpha: 0,
-                y: this.canvas.height / 3,
-                duration: 500,
-                onComplete: () => {
-                  text.destroy();
-                }
-              });
-            }, 2000);
-          }
-        });
+        this.levelQueue.push(type+" upgraded!");
+        
+      
+ 
 
       })
       this.socket.on("shotDragon", ({who, id, reason}) => {
         // console.log("shotDragon", who, id, reason);
         var txt = `[b][color=#e82a1f]Shot [/color][color=#0000FF]${who}[/color][/b]`;
+
+        console.log(reason)
+
+        if(reason == "drown") this.fellwater.play();
+        else this.killedsomeone.play();
+
         const convert = (num, val, newNum) => (newNum * val) / num;
         var fontsize = convert(1366, 64, this.canvas.width);
 					var text = new BBCodeText(this, this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
@@ -438,16 +633,17 @@ this.lastKnownMyDisplayWidth = 0;
 					this.cameras.main.ignore(text);
           this.minimap.ignore(text);
       });
-    //   var keys = (this.input.keyboard.addKeys({
-    //     up: 'up',
-    //     down: 'down',
-    //     left: 'left',
-    //     right: 'right',
-    //     w: 'W',
-    //     s: 'S',
-    //     a: 'A',
-    //     d: 'D',
-    // }) as Keys);  
+      this.vidText = this.add.text(this.canvas.width /2, this.canvas.height / 3, "", {fontSize: "50px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
+      var keys = (this.input.keyboard.addKeys({
+        up: 'up',
+        down: 'down',
+        left: 'left',
+        right: 'right',
+        w: 'W',
+        s: 'S',
+        a: 'A',
+        d: 'D',
+    }, false) as Keys);  
 
     this.controller = {
       up: false,
@@ -456,71 +652,71 @@ this.lastKnownMyDisplayWidth = 0;
       right: false,
     }
 
-    // keys.up.on('down', () => {
-    //   this.controller.up = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.down.on('down', () => {
-    //   this.controller.down = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.left.on('down', () => {
-    //   this.controller.left = true;
-    //   this.socket.emit("controller", this.controller);
-    // }); 
-    // keys.right.on('down', () => {
-    //   this.controller.right = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.w.on('down', () => {
-    //   this.controller.up = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.s.on('down', () => {
-    //   this.controller.down = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.a.on('down', () => {
-    //   this.controller.left = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.d.on('down', () => {
-    //   this.controller.right = true;
-    //   this.socket.emit("controller", this.controller);
-    // });
+    keys.up.on('down', () => {
+      this.controller.up = true;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.down.on('down', () => {
+      this.controller.down = true;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.left.on('down', () => {
+      this.controller.left = true;
+      this.socket.emit("controller", this.controller);
+    }); 
+    keys.right.on('down', () => {
+      this.controller.right = true;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.w.on('down', () => {
+      this.controller.up = true;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.s.on('down', () => {
+      this.controller.down = true;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.a.on('down', () => {
+      this.controller.left = true;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.d.on('down', () => {
+      this.controller.right = true;
+      this.socket.emit("controller", this.controller);
+    });
 
-    // keys.up.on('up', () => {
-    //   this.controller.up = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.down.on('up', () => {
-    //   this.controller.down = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.left.on('up', () => {
-    //   this.controller.left = false;
-    //   this.socket.emit("controller", this.controller);
-    // }); 
-    // keys.right.on('up', () => {
-    //   this.controller.right = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.w.on('up', () => {
-    //   this.controller.up = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.s.on('up', () => {
-    //   this.controller.down = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.a.on('up', () => {
-    //   this.controller.left = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
-    // keys.d.on('up', () => {
-    //   this.controller.right = false;
-    //   this.socket.emit("controller", this.controller);
-    // });
+    keys.up.on('up', () => {
+      this.controller.up = false;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.down.on('up', () => {
+      this.controller.down = false;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.left.on('up', () => {
+      this.controller.left = false;
+      this.socket.emit("controller", this.controller);
+    }); 
+    keys.right.on('up', () => {
+      this.controller.right = false;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.w.on('up', () => {
+      this.controller.up = false;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.s.on('up', () => {
+      this.controller.down = false;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.a.on('up', () => {
+      this.controller.left = false;
+      this.socket.emit("controller", this.controller);
+    });
+    keys.d.on('up', () => {
+      this.controller.right = false;
+      this.socket.emit("controller", this.controller);
+    });
 
     this.input.on("pointermove", (pointer: PointerEvent) => {
       this.gamePoint = {x: pointer.x, y: pointer.y};
@@ -548,19 +744,57 @@ this.lastKnownMyDisplayWidth = 0;
     }, 2000);
 
   }
+
   const resize = () =>{
     // console.log("resize");
+
+    if(this.background) {
+      this.background.width = this.canvas.width;
+      this.background.height = this.canvas.height;
+    }
+
     if(this.teamPicker && this.teamPicker.visible) {
       this.teamPicker.resize();
       this.teamPicker.rect1.rect.on("pointerdown", () => {
+        if(this.clickedTeam) return;
+        if((this.teamPicker.rect1.getData("oppositeCount") == 0 && this.teamPicker.rect1.getData("count") != 0)|| this.teamPicker.rect1.getData("oppositeCount") - this.teamPicker.rect1.getData("count") >= 2) {
+          return;
+        }
+        this.clickedTeam = true;
         team = "red";
-        this.teamPicker.visible = false;
-        start();
+        // this.teamPicker.visible = false;
+
+        this.tweens.add({
+          targets: this.teamPicker,
+          alpha: 0,
+          duration: 1000,
+          ease: "Linear",
+          onComplete: () => {
+          start();
+          // console.log("team");
+          },
+        });
       });
+      
       this.teamPicker.rect2.rect.on("pointerdown", () => {
+        if(this.clickedTeam) return;
+        if((this.teamPicker.rect2.getData("oppositeCount") == 0 && this.teamPicker.rect2.getData("count") != 0)|| this.teamPicker.rect2.getData("oppositeCount") - this.teamPicker.rect2.getData("count") >= 2) {
+          return;
+        }
+        this.clickedTeam = true;
         team = "blue";
-        this.teamPicker.visible = false;
-        start();
+        // this.teamPicker.visible = false;
+
+        this.tweens.add({
+          targets: this.teamPicker,
+          alpha: 0,
+          duration: 1000,
+          ease: "Linear",
+          onComplete: () => {
+          start();
+          // console.log("team");
+          },
+        });
 
       });
     }
@@ -619,6 +853,7 @@ if(this.dominationBar && this.dominationBar.visible) {
       this.deathScreen.resize();
     }
   }
+
   var doit: string | number | NodeJS.Timeout;
 
   window.addEventListener("resize", function() {
@@ -627,16 +862,115 @@ if(this.dominationBar && this.dominationBar.visible) {
   });
 
   resize();
+}
+console.log(window.localStorage.getItem("story"));
+if(window.localStorage.getItem("story") == "true"){
+  console.log("story");
+  go();
+}
+  }
+ iCantThinkOfWhatToCallThis() {
+    if(this.levelUpShowing) return;
+    const type = this.levelQueue.shift();
+    if(type) {
+      this.levelUpShowing = true;
+    var text= this.add.text(this.canvas.width /2, this.canvas.height / 3, `${type}`, {fontSize: "50px", color: "#ffffff"}).setOrigin(0.5).setAlpha(0);
+    this.cameras.main.ignore(text);
+    this.minimap.ignore(text);
+    // console.log(type, level);
+    this.tweens.add({
+      targets: text,
+      alpha: 1,
+      y: this.canvas.height / 3.5,
+      duration: 500,
+      onComplete: () => {
+        setTimeout(() => {
+          this.tweens.add({
+            targets: text,
+            alpha: 0,
+            y: this.canvas.height / 3,
+            duration: 500,
+            onComplete: () => {
+              text.destroy();
+              this.levelUpShowing = false;
+              this.iCantThinkOfWhatToCallThis();
+            }
+          });
+        }, 2000);
+      }
+    });
+  }
   }
   update(time: number, delta: number): void {
     
    Array.from(this.players.values()).forEach(player => player.updateObject());
    Array.from(this.bullets.values()).forEach(bullet => bullet.updateObject());
+
+if(this.vid && this.vid.visible) {
+  this.vid.scale = Math.min(this.canvas.width / this.vid.width, this.canvas.height / this.vid.height);
+
+  this.vidText.y = this.canvas.height;
+  this.skipButton.x = this.canvas.width ;
+  this.skipButton.y = this.canvas.height;
+
+  this.skipButton.setScale(this.canvas.width /4000);
+  this.vidText.setFontSize(this.canvas.width / 30);
+
+
+  this.vid.x = this.canvas.width / 2;
+  this.vid.y = this.canvas.height / 2;
+
+  var vidStops = [1, 5.7, 9, 14, 17.5, 22];
+
+
+ var t = this.vid.getCurrentTime();
+ console.log(t);
+ if(t >= 23) {
+  this.vid.emit("complete")
+ }
+ if(this.vid.getData("stop") > vidStops.length) {
+  this.vid.destroy();
+  this.vidText.destroy();
+  this.skipButton.destroy();
+ }
+ if(t >= vidStops[this.vid.getData("stop")]) {
+  this.vid.setPaused(true);
+  console.log("Paused!")
+  // console.log(t)
+  this.vidText.visible = true;
+  this.vidText.setText("Click to continue...");
+  this.vid.setData("stop", this.vid.getData("stop") + 1);
+ }
+}
+
    if(this.background) {
-   this.background.setTilePosition(this.cameras.main.scrollX , this.cameras.main.scrollY );
-   this.background.x = this.cameras.main.scrollX + this.canvas.width*1.1 / 2;
-    this.background.y = this.cameras.main.scrollY + this.canvas.height*1.1 / 2;
+   this.background.setTilePosition(this.cameras.main.scrollX * 0.9, this.cameras.main.scrollY * 0.9 );
+   this.background.setTileScale(this.cameras.main.zoom, this.cameras.main.zoom);
+
+   //get screen center coords
+    var centerX = this.cameras.main.scrollX + this.canvas.width / 2;
+    var centerY = this.cameras.main.scrollY + this.canvas.height / 2;
+
+    
+
+
+   this.background.x = centerX- (this.cameras.main.displayWidth / (2 / 1.1));
+   this.background.y = centerY - (this.cameras.main.displayHeight/ (2 / 1.1));
+
+
+
+  //  this.background.x = this.background.x - (this.background.x * -0.05);
+  //   this.background.y = this.background.y - (this.background.y * -0.05);
+
+
+
+ 
+
+  this.background.displayWidth = this.cameras.main.displayWidth * 1.1;
+  this.background.displayHeight = this.cameras.main.displayHeight * 1.1;
+ 
    }
+   this.iCantThinkOfWhatToCallThis();
 
    if(this.spicyMeter && this.spicyMeter.visible) {
     this.spicyMeter.updateContainer();
@@ -701,20 +1035,11 @@ if(this.dominationBar && this.dominationBar.visible) {
 
      show += this.lastKnownMyDisplayWidth * 3;
     
-     
      //var oldZoom = this.cameras.main.zoom;
      var newZoom = Math.max(this.scale.width / show, this.scale.height / show);
       this.cameras.main.setZoom(
        newZoom
      ); 
-if(this.background) {
-     this.background?.setTilePosition(this.cameras.main.scrollX , this.cameras.main.scrollY);
-      // this.background.setTileScale(this.cameras.main.zoom)
-     this.background.x = this.cameras.main.scrollX+this.canvas.width*1.005 / 2;
-      this.background.y = this.cameras.main.scrollY+this.canvas.height*1.005 / 2;
-      this.background.width = this.cameras.main.displayWidth*1.1;
-      this.background.height = this.cameras.main.displayHeight*1.1;
-}
       // console.log(this.background.tileScaleX, this.background.tileScaleY);
     
   }

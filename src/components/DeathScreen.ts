@@ -37,7 +37,6 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
   shotDragons: any;
   peppers: any;
   respawnbutton: ImgButton;
-  homebutton: ImgButton;
   constructor(scene: GameScene, reason: string = "drown", who: string = null, survivedTime: number = 1000, shotDragons: number = 0, peppers: number = 0) {
     super(scene as Scene);
 
@@ -59,14 +58,14 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
     if(this.deadText) this.deadText.destroy();
     if(this.moreData) this.moreData.destroy();
     if(this.respawnbutton) this.respawnbutton.destroy();
-    if(this.homebutton) this.homebutton.destroy();
+    // if(this.homebutton) this.homebutton.destroy();
 
     this.box = new Phaser.GameObjects.Rectangle(scene, scene.canvas.width / 2, scene.canvas.height / 2, scene.canvas.width / 2, scene.canvas.height / 1.5, 0xffffff);
     this.deadText = new Phaser.GameObjects.Text(scene, scene.canvas.width / 2, scene.canvas.height / 2, "You died", {
       fontSize: Math.min(scene.canvas.width / 15, scene.canvas.height / 10) + "px",
       color: "#ff0000",
       align: "center",
-      fontFamily: "Arial"
+      fontFamily: "Finlandica",
 
     }).setOrigin(0.5, 0);
     
@@ -74,7 +73,7 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
       fontSize: Math.min(scene.canvas.width /30, scene.canvas.height / 20) + "px",
       color: "#ff0000",
       align: "center",
-      fontFamily: "Arial"
+      fontFamily: "Finlandica"
     }).setOrigin(0.5, 0);
 
     // console.log(this.who, this.reason);
@@ -100,34 +99,48 @@ export default class DeathScreen extends Phaser.GameObjects.Container {
       (this.scene as GameScene).socket.disconnect();
       (this.scene as GameScene).scene.restart();
     });
-    this.homebutton = new ImgButton(scene as Phaser.Scene, scene.canvas.width / 2, this.box.displayHeight + (this.respawnbutton.btn.displayHeight/2), "home", () => {
-      (this.scene as GameScene).callback();
-      (this.scene as GameScene).socket.disconnect();
-      (this.scene as GameScene).scene.start("title");
-    });
+    this.respawnbutton.btn.y += this.box.displayHeight / 10;
+    // this.homebutton = new ImgButton(scene as Phaser.Scene, scene.canvas.width / 2, this.box.displayHeight + (this.respawnbutton.btn.displayHeight/2), "home", () => {
+    //   (this.scene as GameScene).callback();
+    //   (this.scene as GameScene).socket.disconnect();
+    //   (this.scene as GameScene).scene.start("title");
+    // });
 
     
 
     // console.log(this.box.displayWidth, this.respawnbutton.btn.disp);
-    while (this.respawnbutton.btn.displayWidth > this.box.displayWidth || this.respawnbutton.btn.displayHeight > this.box.displayHeight / 7) {
+    while (this.respawnbutton.btn.displayWidth > this.box.displayWidth * 2 || this.respawnbutton.btn.displayHeight > this.box.displayHeight / 3.5) {
       this.respawnbutton.btn.setScale(this.respawnbutton.btn.scaleX - 0.01);
     }
-    while (this.homebutton.btn.displayWidth > this.box.displayWidth || this.homebutton.btn.displayHeight > this.box.displayHeight / 7) {
-      this.homebutton.btn.setScale(this.homebutton.btn.scaleX - 0.01);
-    }
+    this.respawnbutton.y += this.box.displayHeight / 3.5;
+    // while (this.homebutton.btn.displayWidth > this.box.displayWidth || this.homebutton.btn.displayHeight > this.box.displayHeight / 7) {
+    //   this.homebutton.btn.setScale(this.homebutton.btn.scaleX - 0.01);
+    // }
 
     this.respawnbutton.y = this.box.displayHeight;
-    this.homebutton.y = this.respawnbutton.y + this.respawnbutton.btn.displayHeight - 5;
+    // this.homebutton.y = this.respawnbutton.y + this.respawnbutton.btn.displayHeight - 5;
 
     
+this.box.setAlpha(0);
+this.deadText.setAlpha(0);
+this.moreData.setAlpha(0);
+this.respawnbutton.btn.setAlpha(0);
 
+    this.scene.tweens.add({
+      targets: [this.box, this.deadText, this.moreData, this.respawnbutton.btn],
+      alpha: 1,
+      duration: 100,
+      ease: 'Linear',
+    });
     
+    
+
 
     this.add(this.box);
    
     this.add(this.deadText);
     this.add(this.respawnbutton);
-    this.add(this.homebutton);
+    // this.add(this.homebutton);
 
     this.add(this.moreData);
   }

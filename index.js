@@ -21,6 +21,21 @@ app.use("/assets", express.static(__dirname+"/assets"));
 
 roomlist.setRoom(new Room())
 
+app.get("/teams", (req, res) => {
+  var room = roomlist.getAllRooms()[0];
+  var redPlayers = 0;
+  var bluePlayers = 0;
+  [...room.players.values()].forEach(player => {
+    if(player.team == "red") redPlayers++;
+    else if(player.team == "blue") bluePlayers++;
+  });
+  res.send({
+    red: {playerCount: redPlayers},
+    blue: {playerCount: bluePlayers}
+  });
+
+})
+
 io.on("connection", async (socket) => {
   socket.on("go", (name, team) => {
     if(!name || typeof name != "string") return;

@@ -6,6 +6,8 @@ const Bullet = require("./Bullet");
 
 const levels = require("../helpers/levels")
 
+var mousemove = true;
+
 class Player {
   constructor(name, id=idgen(), socket=undefined) {
     this.name = name;
@@ -168,24 +170,29 @@ class Player {
   tick(tickDiff) {
     //move
     if(this.queuedForDeath) return;
+    
     var levelMult = this.speedLevel == 1 ? 1.5 : this.speedLevel == 2 ? 2 : 3;
-    // if(this.controller.left) {
-    //   this.pos.x -= tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
-    // }
-    // if(this.controller.right) {
-    //   this.pos.x += tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
-    // }
-    // if(this.controller.up) {
-    //   this.pos.y -= tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
-    // }
-    // if(this.controller.down) {
-    //   this.pos.y += tickDiff * 0.2* this.speed  * this.speedMultiplier * levelMult;
-    // }
+    if(!mousemove) {
+    if(this.controller.left) {
+      this.pos.x -= tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
+    }
+    if(this.controller.right) {
+      this.pos.x += tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
+    }
+    if(this.controller.up) {
+      this.pos.y -= tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
+    }
+    if(this.controller.down) {
+      this.pos.y += tickDiff * 0.2* this.speed  * this.speedMultiplier * levelMult;
+    }
+  } else 
 
+    if(mousemove) {
     var speed = this.speed * this.speedMultiplier * levelMult;
 
     this.pos.x += Math.cos(this.lookAngle) * speed * tickDiff * 0.2 * this.force;
     this.pos.y += Math.sin(this.lookAngle) * speed * tickDiff * 0.2 * this.force;
+    }
 
     const clamp = (min, max, value) => Math.max(min, Math.min(max, value));
     this.pos.x = clamp(-2000, 2000, this.pos.x);

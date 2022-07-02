@@ -40,8 +40,25 @@ class OpenScene extends Phaser.Scene {
       this.load.image("again", "/assets/images/again.jpeg");
       this.load.image("pepper", "/assets/images/pepper.png");
 
+      this.load.video("intro", "/assets/videos/intro.mp4", 'loadeddata', false, true);
+
+      this.load.image("redFlag", "/assets/images/redFlag.png");
+      this.load.image("blueFlag", "/assets/images/blueFlag.png");
+
       this.load.image("blueFireball", "/assets/images/blueFireball.png");
       this.load.image("redFireball", "/assets/images/redFireball.png");
+
+      this.load.audio("dead", "/assets/audio/dead.wav");
+      this.load.audio("killedSomeone", "/assets/audio/killedSomeone.wav");
+      this.load.audio("water", "/assets/audio/water.wav");
+      this.load.audio("fellwater", "/assets/audio/fellwater.wav");
+      this.load.audio("gothit", "/assets/audio/gothit.wav");
+      this.load.audio("hitsomeone", "/assets/audio/hitsomeone.wav");
+      this.load.audio("shoot", "/assets/audio/shoot.mp3");
+
+      this.load.image("skip", "/assets/images/skip.png");
+
+      this.load.audio("captured", "/assets/audio/captured.wav");
 
       // this.load.plugin('rexbbcodetextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexbbcodetextplugin.min.js', true);
 

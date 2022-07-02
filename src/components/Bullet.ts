@@ -31,7 +31,7 @@ export default class Bullet extends Phaser.GameObjects.Container {
     if(s.players.has(data.owner)) this.team = s.players.get(data.owner).team;
 
     this.bullet = new Phaser.GameObjects.Image(scene, 0, 0, this.team+"Fireball").setOrigin(0.5);
-    this.bullet.setScale(0.05);
+    this.bullet.setScale(0.1);
     this.bullet.setRotation(data.angle+(Math.PI/2));
     this.lastRecievedData = Date.now();
     this.add(this.bullet);

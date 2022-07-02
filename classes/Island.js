@@ -44,7 +44,9 @@ module.exports = class Island {
   }
   tick(diff, room) {
     if(!this.canBeCaptured) return;
+
     var players = Array.from(room.players.values()).filter(player => this.isIn(player.pos));
+  
     this.people = players.map(player => player.id);
     io.getio().to(room.id).emit("islandUpdate", this.getSendObject());
     if(this.lastPepperGrew + 1000 < Date.now()) this.pepperGrew(room);
@@ -54,7 +56,7 @@ module.exports = class Island {
         this.capturedPercentage = 0;
         this.captureState = 0;
       }
-      io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
+      // io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
 
     }
     if(players.length < 1 && this.captureState == 2) {
@@ -63,7 +65,7 @@ module.exports = class Island {
       if(this.capturedPercentage >= 100) {
         this.capturedBy = this.capturingBy;
         io.getio().to(room.id).emit("islandCaptured", this.id, this.capturedBy);
-      } else io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
+      }
 
       // console.log(this.capturedPercentage);
       
@@ -87,9 +89,9 @@ module.exports = class Island {
       if(this.capturedPercentage >= 100) {
         this.capturedBy = team;
         this.captureState = 2;
-        io.getio().to(room.id).emit("islandCaptured", this.id, this.capturedBy);
+        // io.getio().to(room.id).emit("islandCaptured", this.id, this.capturedBy);
       } else {
-        io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
+        // io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
       }
     
     } else if(this.captureState == 1) {
@@ -98,7 +100,7 @@ module.exports = class Island {
         this.capturedPercentage = 0;
         this.captureState = 0;
       }
-      io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
+      // io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
 
     } else if(this.captureState == 2) {
     // console.log("island captured");
@@ -113,8 +115,8 @@ module.exports = class Island {
         this.capturedBy = team;
         this.captureState = 2;
       }
-      io.getio().to(room.id).emit("islandCaptured", this.id, this.capturedBy);
-      io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
+      // io.getio().to(room.id).emit("islandCaptured", this.id, this.capturedBy);
+      // io.getio().to(room.id).emit("islandCapturing", this.id, this.capturingBy, this.capturedPercentage);
     }
 
   }

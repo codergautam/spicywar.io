@@ -8,6 +8,7 @@ class TitleScene extends Phaser.Scene {
   text: Phaser.GameObjects.Text;
   mobile: boolean;
   rect: Phaser.GameObjects.Rectangle;
+  enterKey: Phaser.Input.Keyboard.Key;
   constructor(callback: Function) {
     super("title");
     this.callback = callback;
@@ -16,27 +17,63 @@ class TitleScene extends Phaser.Scene {
   }
   create() {
     this.rect = this.add.rectangle(0,0,0,0, 0xB19CB8).setOrigin(0.5).setScale(2).setDepth(10);
+    this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER, false);
+    this.nameBox = this.add.dom(0,0).createFromCache("namebox").setScale(0);
     
-    this.nameBox = this.add.dom(0,0).createFromCache("namebox");
-    this.background = this.add.image(0, 0, "title").setOrigin(0).setScrollFactor(0, 0).setScale(2).setDepth(0);
 
-    this.text = this.add.text(this.canvas.width / 2, 0, "Spicywar.io", {
+    if(window.localStorage.getItem("name") !== null) {
+      (this.nameBox.getChildByName('name') as any).value = window.localStorage.getItem("name");
+    }
+
+    this.background = this.add.image(0, 0, "title").setOrigin(0).setScrollFactor(0, 0).setScale(2).setDepth(0).setAlpha(0);
+
+    this.tweens.add({
+      targets: this.background,
+      alpha: 1,
+      duration: 500,
+      ease: "Linear",
+      repeat: 0,
+      yoyo: false
+    });
+
+
+    this.text = this.add.text(0, 0, "Spicywar.io", {
       fontSize: "64px",
       color: "#000000",
-    }).setOrigin(0.5).setDepth(15).setScrollFactor(0, 0);
+      fontFamily: "Finlandica",
+    }).setOrigin(0.5).setDepth(15).setScrollFactor(0, 0).setScale(0);
 
+
+    this.tweens.add({
+      targets: [this.text, this.nameBox],
+      scaleX: 1,
+      scaleY: 1,
+      duration: 500,
+      ease: "Linear",
+      repeat: 0,
+      yoyo: false
+    });
+
+const click = () => {
+  var box = this.nameBox.getChildByName("name") as HTMLInputElement | null;
+  var name = box.value.trim();
+  if(!name || name.length == 0) return;
+
+  this.nameBox.destroy();
+  this.text.destroy();
+  this.rect.destroy();
+  
+
+  window.localStorage.setItem("name", name);
+
+
+  this.callback(name);
+}
+
+this.enterKey.on("down", click);
 
     this.nameBox.getChildByName("btn").addEventListener("click", () => {
-      var box = this.nameBox.getChildByName("name") as HTMLInputElement | null;
-      var name = box.value.trim();
-      if(!name || name.length == 0) return;
-
-      this.nameBox.destroy();
-      this.text.destroy();
-      this.rect.destroy();
-      
-
-      this.callback(name);
+      click();
     });
 
 
@@ -55,11 +92,16 @@ class TitleScene extends Phaser.Scene {
       } catch (e) {
 
       }
+
+      // check if tween is running
+      // if(this.tweens.isTweening(this.text)) {
+      this.text.y = this.canvas.height / 3;
+      
       this.text.x = this.canvas.width / 2;
-      this.text.y = this.canvas.height / 4;
+      
 
       this.nameBox.x = this.canvas.width / 2;
-      this.nameBox.y = this.canvas.height / 2.3;
+      this.nameBox.y = this.canvas.height / 2.2;
     };
     var doit: string | number | NodeJS.Timeout;
 
@@ -74,7 +116,7 @@ class TitleScene extends Phaser.Scene {
        this.text.setFontSize(this.nameBox.getChildByName('name').clientWidth / 5);
 
        this.rect.setPosition(this.canvas.width/2, this.text.y - this.text.displayHeight);
-        this.rect.setSize(this.text.displayWidth /1.5,  (this.canvas.height / 2.3) - this.rect.y);
+        this.rect.setSize(this.text.displayWidth /1.5,  (this.canvas.height / 2.2) - this.rect.y);
         this.rect.x -= this.rect.displayWidth/2;
   }
 }

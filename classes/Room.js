@@ -147,7 +147,7 @@ class Room {
       if(!reason.tick && this.players.has(reason.who.id)) {
         this.players.get(reason.who.id).shotDragons++;
         this.players.get(reason.who.id).peppers += Math.round(player.peppers * 0.5);
-        this.players.get(reason.who.id).socket.emit("shotDragon", {how: "drown", who: player.name, id: player.id});
+        this.players.get(reason.who.id).socket.emit("shotDragon", {reason: "drown", who: player.name, id: player.id});
       }
       this.players.delete(player.id);
     }
@@ -202,6 +202,10 @@ class Room {
       for (var player of Array.from(this.players.values())) {
         if(bullet.collidingPlayer(player)) {
           if(bullet.team != player.team) {
+
+            //emit to hitter
+          
+
           player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 5 : player.bulletLevel == 2 ? 7 : 10);
           player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 5 : player.bulletLevel == 2 ? 7 : 10);
           player.health -= bullet.damage;
@@ -213,10 +217,17 @@ class Room {
             if(this.players.has(bullet.owner)) {
               this.players.get(bullet.owner).shotDragons++;
               this.players.get(bullet.owner).peppers += Math.round(player.peppers * 0.5);
-              this.players.get(bullet.owner).socket.emit("shotDragon", {how: "burnt", who: player.name, id: player.id});
+              this.players.get(bullet.owner).socket.emit("shotDragon", {reason: "burnt", who: player.name, id: player.id});
             }
             this.players.delete(player.id);
+          } else {
+
+            player.socket.emit("gotHit");
+          if(this.players.has(bullet.owner)) {
+            var owner = this.players.get(bullet.owner);
+            owner.socket.emit("hitSomeone");
           }
+        }
 
           player.hit = true;
           this.checkCollisions(player, {tick: false, who: {name: bullet.ownerName, id: bullet.owner}});

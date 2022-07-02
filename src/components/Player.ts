@@ -163,6 +163,10 @@ export default class Player extends Phaser.GameObjects.Container {
       if(this.oldUntilNextLevel.length > 1) sum = this.oldUntilNextLevel[this.oldUntilNextLevel.length - 2];
       if((data.peppers - sum)/(data.untilNextLevel - sum) > 1 && data.level == 10) {
         (this.scene as GameScene).spiceText.setText("🌶️ FULLY SPICED UP 🌶️");
+        if(!(this.scene as GameScene).shownFly) {
+          (this.scene as GameScene).shownFly = true;
+          (this.scene as GameScene).levelQueue.push("Flying activated!!! 🚀");
+        }
 
       } else (this.scene as GameScene).spiceText.setText("🌶️  Spice Level: "+data.level+" ("+Math.round((data.peppers - sum)/(data.untilNextLevel - sum)*100)+"%)");
 
