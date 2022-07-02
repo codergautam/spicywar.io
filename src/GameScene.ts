@@ -213,7 +213,7 @@ this.lastKnownMyDisplayWidth = 0;
 
       this.teamPicker.rect1.rect.on("pointerdown", () => {
         if(this.clickedTeam) return;
-        if((this.teamPicker.rect1.getData("oppositeCount") == 0 && this.teamPicker.rect1.getData("count") != 0)|| this.teamPicker.rect1.getData("oppositeCount") - this.teamPicker.rect1.getData("count") >= 2) {
+        if((this.teamPicker.rect1.getData("oppositeCount") == 0 && this.teamPicker.rect1.getData("count") != 0)|| (this.teamPicker.rect1.getData("count")- this.teamPicker.rect1.getData("oppositeCount") >= 2 && this.teamPicker.rect1.getData("oppositeCount") != 0)) {
           return;
         }
         this.clickedTeam = true;
@@ -231,7 +231,7 @@ this.lastKnownMyDisplayWidth = 0;
       });
       this.teamPicker.rect2.rect.on("pointerdown", () => {
         if(this.clickedTeam) return;
-        if((this.teamPicker.rect2.getData("oppositeCount") == 0 && this.teamPicker.rect2.getData("count") != 0)|| this.teamPicker.rect2.getData("oppositeCount") - this.teamPicker.rect2.getData("count") >= 2) {
+        if((this.teamPicker.rect2.getData("oppositeCount") == 0 && this.teamPicker.rect2.getData("count") != 0)|| (this.teamPicker.rect2.getData("count")- this.teamPicker.rect2.getData("oppositeCount") >= 2 && this.teamPicker.rect2.getData("oppositeCount") != 0)) {
           return;
         }
         this.clickedTeam = true;
@@ -757,7 +757,7 @@ this.minimap.setVisible(false);
       this.teamPicker.resize();
       this.teamPicker.rect1.rect.on("pointerdown", () => {
         if(this.clickedTeam) return;
-        if((this.teamPicker.rect1.getData("oppositeCount") == 0 && this.teamPicker.rect1.getData("count") != 0)|| this.teamPicker.rect1.getData("oppositeCount") - this.teamPicker.rect1.getData("count") >= 2) {
+        if((this.teamPicker.rect1.getData("oppositeCount") == 0 && this.teamPicker.rect1.getData("count") != 0)|| (this.teamPicker.rect1.getData("count")- this.teamPicker.rect1.getData("oppositeCount") >= 2 && this.teamPicker.rect1.getData("oppositeCount") != 0)) {
           return;
         }
         this.clickedTeam = true;
@@ -777,8 +777,9 @@ this.minimap.setVisible(false);
       });
       
       this.teamPicker.rect2.rect.on("pointerdown", () => {
+        
         if(this.clickedTeam) return;
-        if((this.teamPicker.rect2.getData("oppositeCount") == 0 && this.teamPicker.rect2.getData("count") != 0)|| this.teamPicker.rect2.getData("oppositeCount") - this.teamPicker.rect2.getData("count") >= 2) {
+        if((this.teamPicker.rect2.getData("oppositeCount") == 0 && this.teamPicker.rect2.getData("count") != 0)|| (this.teamPicker.rect2.getData("count")- this.teamPicker.rect2.getData("oppositeCount") >= 2 && this.teamPicker.rect2.getData("oppositeCount") != 0)) {
           return;
         }
         this.clickedTeam = true;

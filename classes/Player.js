@@ -6,7 +6,7 @@ const Bullet = require("./Bullet");
 
 const levels = require("../helpers/levels")
 
-var mousemove = true;
+var mousemove = false;
 
 class Player {
   constructor(name, id=idgen(), socket=undefined) {

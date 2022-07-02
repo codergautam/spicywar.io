@@ -26,7 +26,7 @@ export default class TeamBox extends Phaser.GameObjects.Container {
       var oppositeTeamCount = teams[team == "red" ? "blue" : "red"].playerCount;
       this.setData("oppositeCount", oppositeTeamCount);
 
-      if((oppositeTeamCount == 0 && this.getData("count") != 0)|| oppositeTeamCount - this.getData("count") >= 2) {
+      if((oppositeTeamCount == 0 && this.getData("count") != 0)|| (this.getData("count") - oppositeTeamCount >= 2 && oppositeTeamCount != 0)) {
         this.rect.setFillStyle(0x808080);
       }
   
