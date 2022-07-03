@@ -67,6 +67,10 @@ class Player {
   }                                                                                                           
   joinRoom(room) {
     this.roomId = room.id;
+    var mainIsland = room.islands[0];
+    var randomPos = mainIsland.getRandomPoint(0.4);
+    this.pos = randomPos;
+      
     this.socket.emit("joinRoom", room.id);
   }
   updateController(controller) {
