@@ -17,11 +17,21 @@ const roomlist = require("./helpers/roomlist");
 
 app.use("/", express.static(__dirname + "/dist"));
 app.use("/", express.static(__dirname+"/public"));
+
+
+// app.get("/assets/videos/intro.mp4", (req, res, next) => {
+//   setTimeout(() => {
+//     next();
+//   }, 1000);
+// })
+
 app.use("/assets", express.static(__dirname+"/assets"));
 
 roomlist.setRoom(new Room())
 
 app.get("/teams", (req, res) => {
+  // console.log("GET /teams");
+  // setTimeout(() => {
   var room = roomlist.getAllRooms()[0];
   var redPlayers = 0;
   var bluePlayers = 0;
@@ -33,6 +43,7 @@ app.get("/teams", (req, res) => {
     red: {playerCount: redPlayers},
     blue: {playerCount: bluePlayers}
   });
+// }, 1000)
 
 })
 

@@ -77,6 +77,7 @@ class GameScene extends Phaser.Scene {
   peppers: Map<string, Pepper>;
     titleMusic: Phaser.Sound.BaseSound;
   pick: Phaser.Sound.BaseSound;
+  skipped: boolean;
 
     constructor(callback: Function) {
       super("game");
@@ -125,7 +126,7 @@ class GameScene extends Phaser.Scene {
       this.pick= this.sound.add("pick");
       this.captured = this.sound.add("captured");
 
-      
+
 
       // this.deathScreen = new DeathScreen(this);
 if(window.localStorage.getItem("story") == "true"){
@@ -133,7 +134,8 @@ if(window.localStorage.getItem("story") == "true"){
 this.lastKnownMyDisplayWidth = 0;
 
 
-     this.vid = this.add.video(0, 0, "intro").setOrigin(0.5).setDepth(0);
+     this.vid = this.add.video(0, 0).setOrigin(0.5).setDepth(0);
+     this.vid.loadURL("/assets/videos/intro.mp4");
      this.vid.setData("stop", 0);
       this.vid.play();
 
@@ -141,6 +143,9 @@ this.lastKnownMyDisplayWidth = 0;
   this.cameras.main.ignore(this.skipButton);
 
       this.skipButton.on("pointerdown", () => {
+        if(this.skipped) return;
+        this.skipped = true;
+       
         this.uiCam.fadeOut(500);
         // go();
         window.localStorage.setItem("story", "true");
