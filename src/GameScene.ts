@@ -384,7 +384,7 @@ this.minimap.setVisible(false);
       this.spiceText = this.add.text(
         this.canvas.width / 2,
         this.spicyMeter.y,
-        "🌶️ Spice Level: 1 (0%)",
+        "🌶️ Spicy Level: 1 (0%)",
         {
           color: "#000000",
           fontFamily: "Finlandica",

@@ -186,7 +186,7 @@ export default class Player extends Phaser.GameObjects.Container {
           this.image.setTexture(this.team+"Winged");
         }
 
-      } else (this.scene as GameScene).spiceText.setText("🌶️  Spice Level: "+data.level+" ("+Math.round((data.peppers - sum)/(data.untilNextLevel - sum)*100)+"%)");
+      } else (this.scene as GameScene).spiceText.setText("🌶️  Spicy Level: "+data.level+" ("+Math.round((data.peppers - sum)/(data.untilNextLevel - sum)*100)+"%)");
 
       (this.scene as GameScene).spicyMeter.setLerpValue((data.peppers - sum)/(data.untilNextLevel - sum)*100);
       this.oldLevel = data.level;
