@@ -260,7 +260,8 @@ class Player {
     // pos.y -= Math.sin(Math.PI) * this.speed * (150);
     // this.socket.emit("test", pos);
 
-    if(!this.down || Date.now() - this.lastShoot < 1000/10) return;
+    var cooldown = this.bulletLevel == 1 ? 1000/10 : this.bulletLevel == 2 ? 1000/5 : 1000/3;
+    if(!this.down || Date.now() - this.lastShoot < cooldown) return;
     var room = roomlist.getRoom(this.roomId);
     this.lastShoot = Date.now();
     this.down = false;
