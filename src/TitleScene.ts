@@ -12,6 +12,7 @@ class TitleScene extends Phaser.Scene {
   enterKey: Phaser.Input.Keyboard.Key;
   titleMusic: Phaser.Sound.BaseSound;
   introButton: ImgButton;
+    localStorageAvailable: boolean;
   constructor(callback: Function) {
     super("title");
     this.callback = callback;
@@ -29,7 +30,7 @@ class TitleScene extends Phaser.Scene {
     this.nameBox = this.add.dom(0,0).createFromCache("namebox").setScale(0);
     
 
-    if(window.localStorage.getItem("name") !== null) {
+    if(this.localStorageAvailable && window.localStorage.getItem("name") !== null) {
       (this.nameBox.getChildByName('name') as any).value = window.localStorage.getItem("name");
     }
 
@@ -52,7 +53,7 @@ class TitleScene extends Phaser.Scene {
     }).setOrigin(0.5).setDepth(15).setScrollFactor(0, 0).setScale(0);
 
     this.introButton = new ImgButton(this, 0, 0, "introButton", () => {
-      window.localStorage.setItem("story", "false");
+     if(this.localStorageAvailable) window.localStorage.setItem("story", "false");
       click();
     });
     this.introButton.btn.setScale(this.canvas.width / 3000);
@@ -81,7 +82,7 @@ const click = () => {
   this.rect.destroy();
   
 
-  window.localStorage.setItem("name", name);
+ if(this.localStorageAvailable) window.localStorage.setItem("name", name);
 
 
   this.callback(name, this.titleMusic);

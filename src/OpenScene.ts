@@ -8,6 +8,7 @@ class OpenScene extends Phaser.Scene {
     canvas: any;
     mobile: boolean;
   progressText: Phaser.GameObjects.Text;
+    localStorageAvailable: boolean;
     constructor() {
       super("open");
     }

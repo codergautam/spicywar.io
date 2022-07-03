@@ -78,6 +78,7 @@ class GameScene extends Phaser.Scene {
     titleMusic: Phaser.Sound.BaseSound;
   pick: Phaser.Sound.BaseSound;
   skipped: boolean;
+    localStorageAvailable: boolean;
 
     constructor(callback: Function) {
       super("game");
@@ -129,7 +130,7 @@ class GameScene extends Phaser.Scene {
 
 
       // this.deathScreen = new DeathScreen(this);
-if(window.localStorage.getItem("story") == "true"){
+if( this.localStorageAvailable && window.localStorage.getItem("story") == "true"){
 } else {
 this.lastKnownMyDisplayWidth = 0;
 
@@ -148,7 +149,7 @@ this.lastKnownMyDisplayWidth = 0;
        
         this.uiCam.fadeOut(500);
         // go();
-        window.localStorage.setItem("story", "true");
+      if(this.localStorageAvailable)  window.localStorage.setItem("story", "true");
         this.uiCam.on("camerafadeoutcomplete", () => {
           go();
           this.uiCam.fadeIn(1000);
@@ -173,7 +174,7 @@ this.lastKnownMyDisplayWidth = 0;
         this.vid.destroy();
         this.vidText.destroy();
         this.skipButton.destroy();
-        window.localStorage.setItem("story", "true");
+     if(this.localStorageAvailable)   window.localStorage.setItem("story", "true");
       });
       this.cameras.main.ignore(this.vid);
 
@@ -194,7 +195,7 @@ this.lastKnownMyDisplayWidth = 0;
             this.vid.destroy();
             this.vidText.destroy();
             this.skipButton.destroy();
-            window.localStorage.setItem("story", "true");
+           if(this.localStorageAvailable) window.localStorage.setItem("story", "true");
            } else {
             this.vid.setCurrentTime("+"+(vidEnds[this.vid.getData("stop")] - this.vid.getCurrentTime()));
            }
@@ -942,8 +943,8 @@ if(this.dominationBar && this.dominationBar.visible) {
 
   resize();
 }
-console.log(window.localStorage.getItem("story"));
-if(window.localStorage.getItem("story") == "true"){
+// console.log(window.localStorage.getItem("story"));
+if( this.localStorageAvailable && window.localStorage.getItem("story") == "true"){
   console.log("story");
   go();
 }

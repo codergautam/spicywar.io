@@ -40,9 +40,27 @@ var titleScene = new TitleScene((name: string, titleMusic: Phaser.Sound.BaseSoun
     return name;
 });
 
+
+function isLocalStorageAvailable(){
+    var test = 'test';
+    try {
+        localStorage.setItem(test, test);
+        localStorage.removeItem(test);
+        return true;
+    } catch(e) {
+        return false;
+    }
+}
+
+var localStorageAvailable = isLocalStorageAvailable();
+
 titleScene.mobile = mobile;
 openScene.mobile = mobile;
 gameScene.mobile = mobile;
+
+gameScene.localStorageAvailable = localStorageAvailable;
+openScene.localStorageAvailable = localStorageAvailable;
+titleScene.localStorageAvailable = localStorageAvailable;
 //titleScene.showPromo = false;
 
 function canvas() {
