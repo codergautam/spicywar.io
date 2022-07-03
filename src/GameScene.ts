@@ -79,6 +79,7 @@ class GameScene extends Phaser.Scene {
   pick: Phaser.Sound.BaseSound;
   skipped: boolean;
     localStorageAvailable: boolean;
+  storyWatched: boolean;
 
     constructor(callback: Function) {
       super("game");
@@ -130,7 +131,7 @@ class GameScene extends Phaser.Scene {
 
 
       // this.deathScreen = new DeathScreen(this);
-if( this.localStorageAvailable && window.localStorage.getItem("story") == "true"){
+if( (this.localStorageAvailable && window.localStorage.getItem("story") == "true") || this.storyWatched){
 } else {
 this.lastKnownMyDisplayWidth = 0;
 
@@ -149,13 +150,18 @@ this.lastKnownMyDisplayWidth = 0;
        
         this.uiCam.fadeOut(500);
         // go();
-      if(this.localStorageAvailable)  window.localStorage.setItem("story", "true");
+      if(this.localStorageAvailable) {
+       window.localStorage.setItem("story", "true");
+      }
+      this.storyWatched = true;
+
         this.uiCam.on("camerafadeoutcomplete", () => {
           go();
           this.uiCam.fadeIn(1000);
         this.vid.destroy();
         this.vidText.destroy();
         this.skipButton.destroy();
+        this.skipped = false;
         });
       });
 
@@ -174,7 +180,11 @@ this.lastKnownMyDisplayWidth = 0;
         this.vid.destroy();
         this.vidText.destroy();
         this.skipButton.destroy();
-     if(this.localStorageAvailable)   window.localStorage.setItem("story", "true");
+     if(this.localStorageAvailable) {
+        window.localStorage.setItem("story", "true");
+     }
+     this.storyWatched = true;
+
       });
       this.cameras.main.ignore(this.vid);
 
@@ -195,7 +205,11 @@ this.lastKnownMyDisplayWidth = 0;
             this.vid.destroy();
             this.vidText.destroy();
             this.skipButton.destroy();
-           if(this.localStorageAvailable) window.localStorage.setItem("story", "true");
+           if(this.localStorageAvailable) {
+            window.localStorage.setItem("story", "true");
+           }
+           this.storyWatched = true;
+
            } else {
             this.vid.setCurrentTime("+"+(vidEnds[this.vid.getData("stop")] - this.vid.getCurrentTime()));
            }
@@ -944,7 +958,7 @@ if(this.dominationBar && this.dominationBar.visible) {
   resize();
 }
 // console.log(window.localStorage.getItem("story"));
-if( this.localStorageAvailable && window.localStorage.getItem("story") == "true"){
+if(( this.localStorageAvailable &&window.localStorage.getItem("story") == "true") || this.storyWatched){
   console.log("story");
   go();
 }

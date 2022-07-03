@@ -13,6 +13,7 @@ class TitleScene extends Phaser.Scene {
   titleMusic: Phaser.Sound.BaseSound;
   introButton: ImgButton;
     localStorageAvailable: boolean;
+  storyWatched: boolean;
   constructor(callback: Function) {
     super("title");
     this.callback = callback;
@@ -54,6 +55,7 @@ class TitleScene extends Phaser.Scene {
 
     this.introButton = new ImgButton(this, 0, 0, "introButton", () => {
      if(this.localStorageAvailable) window.localStorage.setItem("story", "false");
+     this.storyWatched = false;
       click();
     });
     this.introButton.btn.setScale(this.canvas.width / 3000);

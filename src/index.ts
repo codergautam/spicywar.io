@@ -36,6 +36,7 @@ var scale = "scale(1)";         // IE 9
 var titleScene = new TitleScene((name: string, titleMusic: Phaser.Sound.BaseSound) => {
     gameScene.name = name;
     gameScene.titleMusic = titleMusic;
+    gameScene.storyWatched = titleScene.storyWatched;
     game.scene.switch("title", "game");
     return name;
 });
@@ -53,6 +54,7 @@ function isLocalStorageAvailable(){
 }
 
 var localStorageAvailable = isLocalStorageAvailable();
+// var localStorageAvailable = false;
 
 titleScene.mobile = mobile;
 openScene.mobile = mobile;
