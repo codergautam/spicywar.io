@@ -17,6 +17,7 @@ interface Keys {
   down: Phaser.Input.Keyboard.Key;
   left: Phaser.Input.Keyboard.Key;
   right: Phaser.Input.Keyboard.Key;
+  space: Phaser.Input.Keyboard.Key;
 
   w: Phaser.Input.Keyboard.Key;
   s: Phaser.Input.Keyboard.Key;
@@ -98,10 +99,18 @@ class GameScene extends Phaser.Scene {
       this.killCombo = 0;
       this.peppers = new Map();
 
+      		try {       
+			(document.getElementsByClassName("grecaptcha-badge")[0] as any).style.opacity = 0;
+		} catch(e) {
+			console.log(e);
+		}
+
     }
 
     create() {
-
+      //
+       ((window as any).grecaptcha as any).ready(() => {
+			((window as any).grecaptcha as any).execute("6LeEvdEgAAAAAAlpL85kPjkGiJBAlbOFxdwEjzMS", {action: "join"}).then((thetoken) => {
       this.uiCam = this.cameras.add(0, 0, this.canvas.width, this.canvas.height);
 
       //EXAMPLE CONFIG - SOUND
@@ -301,7 +310,9 @@ this.lastKnownMyDisplayWidth = 0;
         this.cameras.main.ignore(this.loadingText);
         this.loadingText.setFontSize(this.canvas.width / 20);
       this.socket = io();
-      this.socket.emit("go", this.name, team); 
+      // this.socket.emit("go", this.name, team, this.mobile?true:false); 
+         this.socket.emit("go", this.name, team, true, thetoken); 
+         
       this.team = `${team}`;
 
       this.background = this.add.tileSprite(0, 0, this.canvas.width, this.canvas.height, "background").setOrigin(0).setDepth(-10);
@@ -677,7 +688,7 @@ this.minimap.setVisible(false);
         const convert = (num, val, newNum) => (newNum * val) / num;
         var fontsize = convert(1366, 64, this.canvas.width);
         if(this.shotText && this.shotText.visible && this.tweens.isTweening(this.shotText)) {
-          this.shotText.destroy();
+          // this.shotText.destroy();
           this.killCombo ++;
         } else {
           this.killCombo = 1;
@@ -693,6 +704,7 @@ this.minimap.setVisible(false);
           txt = `[b]${text[this.killCombo-2]} Kill![/b]`;
           else txt = `[b]x${this.killCombo} Kill![/b]`;
         }
+        if(this.shotText) this.shotText.destroy();
 					this.shotText = new BBCodeText(this, this.canvas.width/2, this.canvas.height, txt).setOrigin(0.5).setAlpha(0).setFontSize(fontsize);
         this.add.existing(this.shotText);
 
@@ -732,6 +744,7 @@ this.minimap.setVisible(false);
         s: 'S',
         a: 'A',
         d: 'D',
+        space: 'space',
     }, false) as Keys);  
 
     this.controller = {
@@ -740,6 +753,13 @@ this.minimap.setVisible(false);
       left: false,
       right: false,
     }
+
+         keys.space.on('down', () => {
+            this.socket.emit("down", true);
+         })
+         keys.space.on('up', () => {
+            this.socket.emit("down", false);
+         })
 
     keys.up.on('down', () => {
       this.controller.up = true;
@@ -962,7 +982,9 @@ if(( this.localStorageAvailable &&window.localStorage.getItem("story") == "true"
   console.log("story");
   go();
 }
-  }
+  })
+       });
+    }
  iCantThinkOfWhatToCallThis() {
     if(this.levelUpShowing) return;
     const type = this.levelQueue.shift();
@@ -993,8 +1015,12 @@ if(( this.localStorageAvailable &&window.localStorage.getItem("story") == "true"
         }, 2000);
       }
     });
+    
   }
+       
   }
+    
+
   update(time: number, delta: number): void {
     
    Array.from(this.players.values()).forEach(player => player.updateObject());

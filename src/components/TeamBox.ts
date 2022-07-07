@@ -9,6 +9,7 @@ export default class TeamBox extends Phaser.GameObjects.Container {
   constructor(scene: GameScene, x: number, y: number, team: string) {
     super(scene as Scene);
     this.lastUpdate = Date.now();
+    this.lastRefresh = Date.now();
     this.x = x;
     this.y = y;
 
@@ -45,6 +46,7 @@ export default class TeamBox extends Phaser.GameObjects.Container {
       text = (team +"\n"+teams[team].playerCount+" players");
       // console.log(teams);
       this.text.setText(text);
+      this.setData("team", team);
 
       this.setData("count", teams[team].playerCount);
       var oppositeTeamCount = teams[team == "red" ? "blue" : "red"].playerCount;
@@ -68,13 +70,14 @@ export default class TeamBox extends Phaser.GameObjects.Container {
   }
   preUpdate() {
     //  console.log("ClassPicker update");
-    // console.log("Sus")
-    if(Date.now() - this.lastUpdate > 2000 && this.lastRefresh > 2000 && this.rect && this.rect.visible ) {
-      console.log("Hiding");
+    // console.log(Date.now() - this.lastUpdate, Date.now() - this.lastRefresh)
+    if(Date.now() - this.lastUpdate > 500 && Date.now() - this.lastRefresh > 500 && this.rect && this.rect.visible ) {
+      // console.log("Hiding");
       this.lastUpdate = Date.now();
 
       fetch('/teams').then(res => res.json()).then(teams => {
         this.lastRefresh = Date.now();
+        // console.log(teams)
 
         this.setData("count", teams[this.getData("team")].playerCount);
         var oppositeTeamCount = teams[this.getData("team") == "red" ? "blue" : "red"].playerCount;

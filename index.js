@@ -14,9 +14,13 @@ const Player = require("./classes/Player");
 const Room = require("./classes/Room");
 
 const roomlist = require("./helpers/roomlist");
+const scan = require("./helpers/scan");
 
 app.use("/", express.static(__dirname + "/dist"));
 app.use("/", express.static(__dirname+"/public"));
+const axios = require("axios");
+
+// require("dotenv").config()
 
 
 // app.get("/assets/videos/intro.mp4", (req, res, next) => {
@@ -48,18 +52,50 @@ app.get("/teams", (req, res) => {
 })
 
 io.on("connection", async (socket) => {
-  socket.on("go", (name, team) => {
+  socket.on("go", (name, team, mouseMove, thetoken) => {
     if(!name || typeof name != "string") return;
     name = name.trim();
-    if(name.length == 0) return socket.disconnect();
+    if(scan(name).contains) {
+      name = "*".repeat(name.length);
+    }
+    if(!thetoken) return socket.disconnect();
+
+    const joinThemIn = () => {
+          if(name.length == 0) return socket.disconnect();
 
     if(!team || typeof team != "string") team = "red";
     if(team != "red" && team != "blue") team = "red";
 
     name = name.substring(0,16);
-    var player = new Player(name, socket.id, socket);
+    var player = new Player(name, socket.id, socket, mouseMove);
     player.team = team;
     roomlist.getAllRooms()[0].addPlayer(player);
+    }
+
+    if(thetoken == process.env.bot) return joinThemIn();
+    else {
+      	var send = {
+		secret: process.env.captchaserver,
+		response: thetoken,
+	};
+      		axios
+			.post(
+				"https://www.google.com/recaptcha/api/siteverify?" +
+	  new URLSearchParams(send)
+			)
+			.then(async (f) => {
+				f = f.data;
+				if (!f.success) {
+					console.log("Captcha failed " +  f["error-codes"].toString());
+					return;
+				}
+				if (f.score < 0.3) {
+					console.log("Captcha score too low");
+					return;
+				}
+				joinThemIn();
+			});
+    }
   });
   socket.on("controller", (controller) => {
     var room = roomlist.getRoomByPlayerId(socket.id);

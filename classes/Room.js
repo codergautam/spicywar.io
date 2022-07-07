@@ -148,7 +148,7 @@ class Room {
       player.socket.to(this.id).emit("playerLeft", player.id);
       if(!reason.tick && this.players.has(reason.who.id)) {
         this.players.get(reason.who.id).shotDragons++;
-        this.players.get(reason.who.id).peppers += Math.round(player.peppers * 0.5);
+        this.players.get(reason.who.id).peppers += Math.min(Math.max(10,Math.round(player.peppers * 0.5)), 1000);
         this.players.get(reason.who.id).socket.emit("shotDragon", {reason: "drown", who: player.name, id: player.id});
       }
       this.players.delete(player.id);

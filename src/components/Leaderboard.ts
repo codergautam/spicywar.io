@@ -39,7 +39,7 @@ export default class Leaderboard extends Phaser.GameObjects.Container {
     var text = `[size=${gameScene.canvas.width / 40}][b]Leaderboard[/b][/size]\n`
     var here = false;
     players.forEach((player, i) => {
-      if(i < 10) {
+      if(i < 5) {
         if(player.id == gameScene.socket.id) here = true;
         text += `[size=${gameScene.canvas.width / 50}]#${i+1} - [color=${player.team == "red" ? "red" : "blue"}]${player.name}[/color]: ${player.oldPeppers}\n`;
       } else if (here == false && player.id == gameScene.socket.id) {

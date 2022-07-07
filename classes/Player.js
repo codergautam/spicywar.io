@@ -6,10 +6,9 @@ const Bullet = require("./Bullet");
 
 const levels = require("../helpers/levels")
 
-var mousemove = true;
 
 class Player {
-  constructor(name, id=idgen(), socket=undefined) {
+  constructor(name, id=idgen(), socket=undefined, mouseMove=true) {
     this.name = name;
     this.id = id;
     this.roomId = null;
@@ -30,6 +29,7 @@ class Player {
     this.healAmount = 0.005;
     this.needsFlip = false;
     this.lastShoot = 0;
+    this.mouseMove = mouseMove;
 
     this.force = 0.5;
 
@@ -179,7 +179,7 @@ class Player {
     if(this.queuedForDeath) return;
     
     var levelMult = this.speedLevel == 1 ? 1.5 : this.speedLevel == 2 ? 2 : 3;
-    if(!mousemove) {
+    if(!this.mouseMove) {
     if(this.controller.left) {
       this.pos.x -= tickDiff * 0.2 * this.speed * this.speedMultiplier * levelMult;
     }
@@ -194,7 +194,7 @@ class Player {
     }
   } else 
 
-    if(mousemove) {
+    if(this.mouseMove) {
     var speed = this.speed * this.speedMultiplier * levelMult;
 
     this.pos.x += Math.cos(this.lookAngle) * speed * tickDiff * 0.2 * this.force;
@@ -210,6 +210,8 @@ class Player {
     if(this.untilNextLevel && this.peppers > this.untilNextLevel) {
       if(levels.length <= this.level) {
         this.canFly = true;
+               if(this.health > 50) this.health = 50;
+        this.maxHealth = 50
       } else {
 
       this.level++;
@@ -231,7 +233,8 @@ class Player {
         this.healthLevel++;
         // console.log("health");
         this.socket.emit("levelUp", "health", this.healthLevel);
-        this.health =  this.maxHealth = 100 + (this.healthLevel == 1 ? 0 : this.healthLevel == 2 ? 40 : 100);
+                this.health =  this.maxHealth = 100 + (this.healthLevel == 1 ? 0 : this.healthLevel == 2 ? 40 : 70);
+
       }
     }
       // this.speedMultiplier = 1;
