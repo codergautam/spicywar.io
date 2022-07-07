@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 import GameScene from "../GameScene";
-import { BulletData, Data } from "../helpers/Packets";
+import { BulletData } from "../helpers/Packets";
 
 export default class Bullet extends Phaser.GameObjects.Container {
   id: string;

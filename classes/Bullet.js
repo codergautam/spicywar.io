@@ -49,8 +49,6 @@ class Bullet {
   collidingPlayer(entity) {
     if(entity.id == this.owner) return false;
 
-
-
     var corners = entity.getCorners();
     var arr = [];
     corners.forEach(function(corner) {

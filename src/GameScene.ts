@@ -10,7 +10,7 @@ import GameMap from "./components/Map";
 import Pepper from "./components/Pepper";
 import Player from "./components/Player";
 import TeamPicker from "./components/TeamPicker";
-import { Data, PlayerData, FirstPlayerData, BulletData, IslandData, BridgeData } from "./helpers/Packets";
+import { PlayerData, FirstPlayerData, BulletData, IslandData, BridgeData, PepperData } from "./helpers/Packets";
 
 interface Keys {
   up: Phaser.Input.Keyboard.Key;
@@ -311,7 +311,7 @@ this.lastKnownMyDisplayWidth = 0;
         this.loadingText.setFontSize(this.canvas.width / 20);
       this.socket = io();
       // this.socket.emit("go", this.name, team, this.mobile?true:false); 
-         this.socket.emit("go", this.name, team, true, thetoken); 
+         this.socket.emit("go", this.name, team, false, thetoken); 
          
       this.team = `${team}`;
 
@@ -330,8 +330,8 @@ this.lastKnownMyDisplayWidth = 0;
       this.minimap.setZoom(zoom);
       // this.minimap.setBackgroundColor(0x002244);
       this.minimap.setBackgroundColor(this.team == "blue" ? 0x002244 : 0x440000);
-      this.minimap.scrollX = -150;
-      this.minimap.scrollY = -150;
+      this.minimap.scrollX = -75;
+      this.minimap.scrollY = -75;
 this.minimap.setVisible(false);
       this.minimap.ignore(this.background);
 
@@ -353,7 +353,7 @@ this.minimap.setVisible(false);
     
       this.add.existing(this.killCount);
       this.killCount.addImage("pepper", {
-        key: "pepper",
+        key: team == "blue"? "bluePepper" : "redPepper",
         width: 45,
         height: 45
       });
@@ -415,17 +415,17 @@ this.minimap.setVisible(false);
       this.dominationBar.bar.x -= this.dominationBar.width / 2;
 
      const playerJoined = (data: FirstPlayerData) =>{
-        this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team).setDepth(2));
+        this.players.set(data.id, new Player(this, data.pos.x, data.pos.y, data.id, data.name, data.team, undefined, undefined, data.joinTime).setDepth(2));
         if(this.socket.id === data.id) {
          this.cameras.main.startFollow(this.players.get(data.id));
         //  this.minimap.startFollow(this.players.get(data.id));
               }
         }
 
-        this.socket.on("peppers", (data: Data[]) => {
+        this.socket.on("peppers", (data: PepperData[]) => {
           data.forEach((d) => {
             if(!this.peppers.has(d.id)) {
-              this.peppers.set(d.id, new Pepper(this, d.pos.x, d.pos.y, d.id).setDepth(2));
+              this.peppers.set(d.id, new Pepper(this, d.pos.x, d.pos.y, d.id, d.color).setDepth(1.9));
             }
           })
         })

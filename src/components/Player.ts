@@ -25,6 +25,8 @@ export default class Player extends Phaser.GameObjects.Container {
   oldLevel: number;
   oldUntilNextLevel: number[];
   circle: Phaser.GameObjects.Ellipse;
+
+  joinTime: number;
   constructor(
     scene: Phaser.Scene,
     x: number,
@@ -33,7 +35,8 @@ export default class Player extends Phaser.GameObjects.Container {
     name: string,
     team: string,
     speed: number = 1,
-    size: number = 50
+    size: number = 50,
+    joinTime: number
   ) {
     super(scene);
     this.x = x;
@@ -42,6 +45,7 @@ export default class Player extends Phaser.GameObjects.Container {
     this.lastTick = Date.now();
     this.lastUpdate = Date.now();
 
+    this.joinTime = joinTime;
 
     this.id = id;
     this.name = name;
@@ -113,7 +117,29 @@ export default class Player extends Phaser.GameObjects.Container {
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
     (this.scene as GameScene).minimap.ignore([this.healthBar, this.nameTag, this.image]);
-
+        console.log(this.joinTime, this.name, Date.now() - this.joinTime)
+    if(Date.now() - this.joinTime < 3000) {
+      this.scene.tweens.add({
+        targets: this.image,
+        alpha: 0.4,
+        duration: 100,
+        ease: "Linear",
+        repeat: 0,
+        delay: 0,
+        onComplete: () => {
+         setTimeout(() => {
+            this.scene.tweens.add({
+              targets: this.image,
+              alpha: 1,
+              duration: 300,
+              ease: "Linear",
+              repeat: 0,
+              delay: 0,
+            });
+         }, 3000-( Date.now() - this.joinTime))
+        }
+      });
+    }
   }
   tick(data: PlayerData, hit: boolean) {
     this.toAngle = data.lookAngle + Math.PI + 0.35;

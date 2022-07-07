@@ -1,6 +1,7 @@
 const intersect = require("intersects");
 const io = require("../helpers/io");  
 const idgen = require("../helpers/idgen");
+const Pepper = require("./Pepper");
 module.exports = class Island {
   constructor(shape, size, position, canBeCaptured = true) {
     this.shape = shape;
@@ -22,15 +23,26 @@ module.exports = class Island {
   pepperGrew(room) {
     this.lastPepperGrew = Date.now();
     
-    // check if captured
-    if(this.capturedBy == "none") return;
-    
-    room.players.forEach(player => {
-      if(player.team == this.capturedBy) {
-        player.peppers += 1;
-      }
-    });
+    if(this.canBeCaptured && this.captureState == 2 && this.capturedBy != "none" && this.getPepperCount(room) < 10) {
+      const pepper = new Pepper(this);
+     room.peppers.set(pepper.id, pepper);
+    }
 
+  }
+  getPeppers(room) {
+    return [...room.peppers.values()].filter(pepper => this.isIn(pepper.pos));
+  }
+  getPepperCount(room) {
+    return this.getPeppers(room).length;
+  }
+  clearOtherPeppers(room) {
+    this.getPeppers(room).forEach(pepper => {
+      if(pepper.color != this.capturedBy) {
+        room.peppers.delete(pepper.id);
+        io.getio().to(room.id).emit("pepperCollected", pepper.id);
+      }
+    }
+    );
   }
   getRandomPoint(multiply=1) {
    var radius = ((this.size * multiply) /2) * Math.sqrt(Math.random());
@@ -76,6 +88,7 @@ module.exports = class Island {
         if(this.capturedPercentage >= 100) {
           this.capturedBy = this.capturingBy;
           this.captureState = 2;
+          this.clearOtherPeppers(room);
         }
       }
 
@@ -99,6 +112,7 @@ module.exports = class Island {
       this.capturedPercentage += (diff / 50) * count;
       if(this.capturedPercentage >= 100) {
         this.captureState = 2;
+        this.clearOtherPeppers(room);
         this.capturedBy = team;
         this.capturingBy = team;
         this.capturedPercentage = 100;
@@ -134,6 +148,7 @@ module.exports = class Island {
       this.capturedPercentage += (diff / 50) * count;
       if(this.capturedPercentage >= 100) {
         this.captureState = 2;
+        this.clearOtherPeppers(room);
         this.capturedBy = team;
         this.capturingBy = team;
         this.capturedPercentage = 100;

@@ -20,6 +20,7 @@ app.use("/", express.static(__dirname + "/dist"));
 app.use("/", express.static(__dirname+"/public"));
 const axios = require("axios");
 
+const recaptcha = false;
 // require("dotenv").config()
 
 
@@ -87,6 +88,7 @@ io.on("connection", async (socket) => {
 				f = f.data;
 				if (!f.success) {
 					console.log("Captcha failed " +  f["error-codes"].toString());
+          if(!recaptcha) joinThemIn();
 					return;
 				}
 				if (f.score < 0.3) {

@@ -18,7 +18,7 @@ class Room {
 
     this.islands.push(new Island(
       "circle",
-      1500,
+      1000,
       { x: 0, y: 0 },
       false
     ));
@@ -212,7 +212,7 @@ class Room {
     this.bullets = this.bullets.filter((bullet) => {
       for (var player of Array.from(this.players.values())) {
         if(bullet.collidingPlayer(player)) {
-          if(bullet.team != player.team) {
+          if(!(bullet.team == player.team || Date.now() - player.spawnTime < 3000)) {
 
             //emit to hitter
           
@@ -259,11 +259,6 @@ class Room {
     this.islands.forEach((island) => {
       island.tick(tickDiff, this);
     });
-
-    if(this.peppers.size < 10) {
-      var p = new Pepper(this.islands[0]);
-      this.peppers.set(p.id, p);
-    }
 
     //emit to all players
     ioinstance.to(this.id).emit("peppers", [...this.peppers.values()].map((pepper) => pepper.getSendObject()));

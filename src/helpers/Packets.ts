@@ -2,6 +2,10 @@ interface Data {
   id: string;
   pos: {x: number, y: number};
 }
+interface PepperData extends Data {
+  color: string;
+}
+
 interface PlayerData extends Data {
   health: number;
   lookAngle: number;
@@ -16,6 +20,7 @@ interface PlayerData extends Data {
 interface FirstPlayerData extends PlayerData {
   name: string;
   team: string;
+  joinTime: number;
 }
 interface BulletData extends Data {
   angle: number;
@@ -40,4 +45,4 @@ interface BridgeData {
   corners: {x: number, y: number}[],
 };
 
-export { Data, BridgeData, IslandData, BulletData, PlayerData, FirstPlayerData };
+export { BridgeData, IslandData, BulletData, PlayerData, FirstPlayerData, PepperData };

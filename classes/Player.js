@@ -105,7 +105,9 @@ class Player {
       bodySize: this.bodySize,
       maxHealth: this.maxHealth,
       health: this.health,
-      canFly: this.canFly
+      canFly: this.canFly,
+
+      joinTime: this.spawnTime,
       
     }
   }
