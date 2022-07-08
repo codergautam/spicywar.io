@@ -37,7 +37,7 @@ export default class Island extends Phaser.GameObjects.Container {
     this.add(this.island);
     this.add(this.capturingCircle);
     this.add(this.flag);
-    if(data.size > 1000) this.add(this.background);
+    if(data.size >= 1000) this.add(this.background);
     this.scene.add.existing(this);
     (this.scene as GameScene).uiCam.ignore(this);
   }

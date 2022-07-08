@@ -25,29 +25,29 @@ class Room {
 
     this.islands.push(new Island(
       "circle",
-      500,
+      700,
       { x: 1400, y: 1400 },
     ));
 
     this.islands.push(new Island(
       "circle",
-      500,
+      700,
       { x: -1300, y: 1400 },
     ));
     
     this.islands.push(new Island(
       "circle",
-      500,
+      700,
       { x: 1700, y: -300 },
     ));
     this.islands.push(new Island(
       "circle",
-      500,
+      700,
       { x: -1600, y: -300 },
     ));
     this.islands.push(new Island(
       "circle",
-      500,
+      700,
       { x: 0, y: -1600 },
     ));
     this.bridges.push(new Bridge(this.islands[0], this.islands[1], 150));
@@ -217,8 +217,8 @@ class Room {
             //emit to hitter
           
 
-          player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 5 : player.bulletLevel == 2 ? 7 : 10);
-          player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 5 : player.bulletLevel == 2 ? 7 : 10);
+          player.pos.x += bullet.speed * Math.cos(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 3 : player.bulletLevel == 2 ? 5 : 7);
+          player.pos.y += bullet.speed * Math.sin(bullet.angle) * tickDiff * (player.bulletLevel == 1 ? 3 : player.bulletLevel == 2 ? 5 : 7);
           player.health -= bullet.damage;
           player.lastHit = Date.now();
           player.whoLastHit = bullet.owner;

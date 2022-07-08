@@ -324,14 +324,14 @@ this.lastKnownMyDisplayWidth = 0;
       this.minimap.height = this.canvas.width/ 5;
       this.minimap.y = this.canvas.height - this.minimap.height - 10;
       this.minimap.x = this.canvas.width - this.minimap.width - 10;
-      var mapSize = 4000
+      var mapSize = 4200
       //calculate zoom
       var zoom = this.minimap.width / mapSize;
       this.minimap.setZoom(zoom);
       // this.minimap.setBackgroundColor(0x002244);
       this.minimap.setBackgroundColor(this.team == "blue" ? 0x002244 : 0x440000);
-      this.minimap.scrollX = -75;
-      this.minimap.scrollY = -75;
+      this.minimap.scrollX = -125;
+      this.minimap.scrollY = -125;
 this.minimap.setVisible(false);
       this.minimap.ignore(this.background);
 
