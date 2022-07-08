@@ -311,7 +311,7 @@ this.lastKnownMyDisplayWidth = 0;
         this.loadingText.setFontSize(this.canvas.width / 20);
       this.socket = io();
       // this.socket.emit("go", this.name, team, this.mobile?true:false); 
-         this.socket.emit("go", this.name, team, false, thetoken); 
+         this.socket.emit("go", this.name, team, true, thetoken); 
          
       this.team = `${team}`;
 
@@ -600,7 +600,7 @@ this.minimap.setVisible(false);
       this.socket.on("bridges", (data: BridgeData[]) => {
         data.forEach(d => {
           //  var r = this.add.rectangle(d.pos.x, d.pos.y, d.width*2, d.length, 0xffffff).setDepth(0).setRotation(d.angle).setOrigin(0,0);
-          var r = this.add.tileSprite(d.pos.x, d.pos.y, d.width*2, d.length, "bridge").setDepth(0).setTileScale(0.4).setRotation(d.angle).setOrigin(0,0);
+          var r = this.add.tileSprite(d.pos.x, d.pos.y, d.width*2, d.length, "bridge").setDepth(0).setTileScale(0.6).setRotation(d.angle).setOrigin(0,0);
            this.uiCam.ignore(r);
         });
       });

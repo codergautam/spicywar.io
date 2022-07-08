@@ -50,17 +50,17 @@ class Room {
       500,
       { x: 0, y: -1600 },
     ));
-    this.bridges.push(new Bridge(this.islands[0], this.islands[1], 100));
-     this.bridges.push(new Bridge(this.islands[0], this.islands[2], 100));
-      this.bridges.push(new Bridge(this.islands[0], this.islands[3], 100));
-      this.bridges.push(new Bridge(this.islands[0], this.islands[4], 100));
-      this.bridges.push(new Bridge(this.islands[0], this.islands[5], 100));
+    this.bridges.push(new Bridge(this.islands[0], this.islands[1], 150));
+     this.bridges.push(new Bridge(this.islands[0], this.islands[2], 150));
+      this.bridges.push(new Bridge(this.islands[0], this.islands[3], 150));
+      this.bridges.push(new Bridge(this.islands[0], this.islands[4], 150));
+      this.bridges.push(new Bridge(this.islands[0], this.islands[5], 150));
 
-      this.bridges.push(new Bridge(this.islands[1], this.islands[2], 100));
-      this.bridges.push(new Bridge(this.islands[2], this.islands[4], 100));
-      this.bridges.push(new Bridge(this.islands[4], this.islands[5], 100));
-      this.bridges.push(new Bridge(this.islands[5], this.islands[3], 100));
-      this.bridges.push(new Bridge(this.islands[3], this.islands[1], 100));
+      this.bridges.push(new Bridge(this.islands[1], this.islands[2], 200));
+      this.bridges.push(new Bridge(this.islands[2], this.islands[4], 150));
+      this.bridges.push(new Bridge(this.islands[4], this.islands[5], 150));
+      this.bridges.push(new Bridge(this.islands[5], this.islands[3], 150));
+      this.bridges.push(new Bridge(this.islands[3], this.islands[1], 150));
 
     
 
@@ -190,12 +190,12 @@ class Room {
       ioinstance.to(this.id).emit("playerUpdate", player.getSendObject());
       if(player.hit) player.hit = false;
 
-      var atleastinoneisland = this.islands.some((island) => island.capturedBy == player.team && island.isIn(player.pos));
-      if(!atleastinoneisland) {
-        player.speedMultiplier = 1;
-      } else {
-        player.speedMultiplier = 1.5;
-      }
+      // var atleastinoneisland = this.islands.some((island) => island.capturedBy == player.team && island.isIn(player.pos));
+      // if(!atleastinoneisland) {
+      //   player.speedMultiplier = 1;
+      // } else {
+      //   player.speedMultiplier = 1.5;
+      // }
       //make sure player is on island
       this.checkCollisions(player, {tick: true, who: ""});
 
