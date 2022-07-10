@@ -71,6 +71,7 @@ io.on("connection", async (socket) => {
     var player = new Player(name, socket.id, socket, mouseMove);
     player.team = team;
     roomlist.getAllRooms()[0].addPlayer(player);
+      console.log(socket.id +" joined!")
     }
 
     if(thetoken == process.env.bot) return joinThemIn();
@@ -117,11 +118,12 @@ io.on("connection", async (socket) => {
   socket.on("ping", (fn) => {
     fn(); // Simply execute the callback on the client
   })
-  socket.on("disconnect", async () => {
+  socket.on("disconnect", async (why) => {
     var room = roomlist.getRoomByPlayerId(socket.id);
     if(room) {
       room.removePlayer(socket.id);
     }
+    console.log(socket.id +" disconnected because "+why);
   });
 });
 
@@ -135,7 +137,7 @@ setInterval(() => {
   if(Date.now() - secondStart > 1000) {
     // console.log("tps: " + tps);
     actps = tps;
-    console.log("TPS", actps)
+    // console.log("TPS", actps)
     tps = 0;
     secondStart = Date.now();
   }

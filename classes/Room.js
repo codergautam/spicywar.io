@@ -56,7 +56,7 @@ class Room {
       this.bridges.push(new Bridge(this.islands[0], this.islands[4], 150));
       this.bridges.push(new Bridge(this.islands[0], this.islands[5], 150));
 
-      this.bridges.push(new Bridge(this.islands[1], this.islands[2], 200));
+      this.bridges.push(new Bridge(this.islands[1], this.islands[2], 150));
       this.bridges.push(new Bridge(this.islands[2], this.islands[4], 150));
       this.bridges.push(new Bridge(this.islands[4], this.islands[5], 150));
       this.bridges.push(new Bridge(this.islands[5], this.islands[3], 150));

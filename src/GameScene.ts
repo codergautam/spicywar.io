@@ -270,6 +270,7 @@ this.lastKnownMyDisplayWidth = 0;
           ease: "Linear",
           onComplete: () => {
         this.titleMusic.stop();
+            this.teamPicker.destroy();
 
           start();
           },
@@ -291,6 +292,7 @@ this.lastKnownMyDisplayWidth = 0;
           ease: "Linear",
           onComplete: () => {
         this.titleMusic.stop();
+            this.teamPicker.destroy();
 
           start();
           // console.log("team");
@@ -309,9 +311,9 @@ this.lastKnownMyDisplayWidth = 0;
         this.uiCam.fadeIn(100)
         this.cameras.main.ignore(this.loadingText);
         this.loadingText.setFontSize(this.canvas.width / 20);
-      this.socket = io();
-      // this.socket.emit("go", this.name, team, this.mobile?true:false); 
-         this.socket.emit("go", this.name, team, true, thetoken); 
+      this.socket = io(undefined, {transports: ["websocket"]});
+      this.socket.emit("go", this.name, team, this.mobile?true:false, thetoken); 
+         // this.socket.emit("go", this.name, team, true, thetoken); 
          
       this.team = `${team}`;
 
@@ -517,10 +519,13 @@ this.minimap.setVisible(false);
               alpha: 0,
               duration: 500,
               onComplete: () => {
-
+try {
           this.players.get(id).destroy();
 
           this.players.delete(id);
+} catch(e) {
+  console.log("vdgj")
+}
               },
             });
 
@@ -880,6 +885,7 @@ this.minimap.setVisible(false);
           ease: "Linear",
           onComplete: () => {
         this.titleMusic.stop();
+            this.teamPicker.destroy();
 
           start();
           // console.log("team");
@@ -904,6 +910,7 @@ this.minimap.setVisible(false);
           ease: "Linear",
           onComplete: () => {
         this.titleMusic.stop();
+            this.teamPicker.destroy();
 
           start();
           // console.log("team");

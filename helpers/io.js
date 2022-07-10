@@ -6,6 +6,9 @@ module.exports = {
         // start socket.io server and cache io value
         io = new Server(server, {
           cors: { origin: "*" },
+          pingTimeout: 180000,
+          pingInterval: 25000,
+          transports: ["websocket"]
         });
         return io;
     },

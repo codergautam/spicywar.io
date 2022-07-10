@@ -183,24 +183,24 @@ class Player {
     var levelMult = this.speedLevel == 1 ? 1.5 : this.speedLevel == 2 ? 2 : 3;
     if(!this.mouseMove) {
     if(this.controller.left) {
-      this.pos.x -= tickDiff * 0.15 * this.speed * this.speedMultiplier * levelMult;
+      this.pos.x -= tickDiff * 0.18 * this.speed * this.speedMultiplier * levelMult;
     }
     if(this.controller.right) {
-      this.pos.x += tickDiff * 0.15 * this.speed * this.speedMultiplier * levelMult;
+      this.pos.x += tickDiff * 0.18 * this.speed * this.speedMultiplier * levelMult;
     }
     if(this.controller.up) {
-      this.pos.y -= tickDiff * 0.15 * this.speed * this.speedMultiplier * levelMult;
+      this.pos.y -= tickDiff * 0.18 * this.speed * this.speedMultiplier * levelMult;
     }
     if(this.controller.down) {
-      this.pos.y += tickDiff * 0.15* this.speed  * this.speedMultiplier * levelMult;
+      this.pos.y += tickDiff * 0.18* this.speed  * this.speedMultiplier * levelMult;
     }
   } else 
 
     if(this.mouseMove) {
     var speed = this.speed * this.speedMultiplier * levelMult;
 
-    this.pos.x += Math.cos(this.lookAngle) * speed * tickDiff * 0.15 * this.force;
-    this.pos.y += Math.sin(this.lookAngle) * speed * tickDiff * 0.15 * this.force;
+    this.pos.x += Math.cos(this.lookAngle) * speed * tickDiff * 0.18 * this.force;
+    this.pos.y += Math.sin(this.lookAngle) * speed * tickDiff * 0.18 * this.force;
     }
 
     const clamp = (min, max, value) => Math.max(min, Math.min(max, value));

@@ -60,8 +60,12 @@ export default class TeamBox extends Phaser.GameObjects.Container {
      // this.text.x += this.image.displayWidth;
   
      this.image.x -= this.text.displayWidth / 2;
-  
+
+      try {
       this.rect.setInteractive();
+      } catch(e) {
+        console.log(e)
+      }
   
 
     })
@@ -71,7 +75,7 @@ export default class TeamBox extends Phaser.GameObjects.Container {
   preUpdate() {
     //  console.log("ClassPicker update");
     // console.log(Date.now() - this.lastUpdate, Date.now() - this.lastRefresh)
-    if(Date.now() - this.lastUpdate > 500 && Date.now() - this.lastRefresh > 500 && this.rect && this.rect.visible ) {
+    if(Date.now() - this.lastUpdate > 1000 && Date.now() - this.lastRefresh > 1000 && this.rect && this.rect.visible ) {
       // console.log("Hiding");
       this.lastUpdate = Date.now();
 
