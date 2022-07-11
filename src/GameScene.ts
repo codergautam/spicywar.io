@@ -461,6 +461,14 @@ this.minimap.setVisible(false);
         // console.log("playerJoined", data);
         playerJoined(data);
       });
+      this.socket.on("islandState", (id: number, data: {state: number, capturedBy: string, capturingBy: string, dir: number}, capturedPercentage: number) => {
+        if(this.islands.find(i => i.id == id)) {
+          console.log("islandUpdate", data);
+
+          var island = this.islands.find(i => i.id == id);
+          island.setCurState(data, capturedPercentage);
+        }
+      })
       this.socket.on("islandUpdate", (data: IslandData) => {
         if(this.islands.find(i => i.id === data.id)) {
           var island = this.islands.find(i => i.id === data.id);
@@ -468,45 +476,7 @@ this.minimap.setVisible(false);
           island.setPercent(data.capturedPercentage, data.capturingBy);
           // console.log(data);
 
-          if(data.people.includes(this.socket.id) && this.team && data.capturedBy == "none") {
-           if(Math.ceil(data.capturedPercentage) < 100) {
-            this.captureText.setData('island', data.id);
-            if(data.capturingBy == this.team) this.captureText.setText("Capturing..." + Math.round(data.capturedPercentage) + "%");
-            else this.captureText.setText("Destroying..." + Math.round(data.capturedPercentage) + "%");
-           }
-           else {
-            this.captureText.setText("");
-            if(data.capturedBy == this.team || data.capturingBy == this.team) {
-            var t = this.add.text(this.canvas.width / 2, this.canvas.height / 5, "Island Captured!", {
-              fontSize: Math.min(this.canvas.width/10, 70)+"px",
-              fontFamily: "Arial",
-              color: "#000000",
-              align: "center"
-            }).setDepth(10).setAlpha(0);
-            this.captured.play();
-            t.setOrigin(0.5);
-            this.cameras.main.ignore(t);
-            this.minimap.ignore(t);
-            this.tweens.add({
-              targets: t,
-              alpha: 1,
-              onComplete: () => {
-                this.tweens.add({
-                  targets: t,
-                  alpha: 0,
-                  duration: 1000,
-                  onComplete: () => {
-                    t.destroy();
-                  }
-                });
-              }
-            });
-          }
-           }
-          } else {
-            // console.log(this.captureText.data)
-            if(this.captureText.getData('island') == data.id) this.captureText.setText("");
-          }
+        
           
 
         }
@@ -1168,6 +1138,20 @@ if(this.vid && this.vid.visible) {
        newZoom
      ); 
       // console.log(this.background.tileScaleX, this.background.tileScaleY);
+
+      var me = this.players.get(this.socket?.id);
+    
+      if(me && this.captureText && this.islands.some(island => island.inIsland(me.x, me.y))) {
+        var island = this.islands.find(island => island.inIsland(me.x, me.y));
+        if(island && island.dir != 0 && (island.dir > 0 ? island.capturingBy == this.team : island.capturingBy != this.team)) {
+          this.captureText.setVisible(true);
+          this.captureText.setText(island.dir < 0 ? "Destroying.. "+(100-Math.max(0,Math.min(100, Math.round(island.capturingCircle.scaleX*100))))+"%" : "Capturing.. "+Math.max(0,Math.min(100, Math.round(island.capturingCircle.scaleX*100)))+"%");
+        } else {
+          this.captureText.setText("");
+        }
+      } else {
+        this.captureText?.setText("");
+      }
     
   }
 }

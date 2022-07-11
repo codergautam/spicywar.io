@@ -36,6 +36,7 @@ interface IslandData {
   capturedPercentage: number;
   capturingBy: string;
   people: string[];
+  currentwhat: {state: number, capturedBy: string, capturingBy: string, dir: number};
 }
 interface BridgeData {
   width: number,

@@ -77,6 +77,10 @@ class Room {
     player.socket.emit("bullets", this.bullets.map((bullet) => bullet.getSendObject()));
     player.socket.emit("islands", this.islands.map((island) => island.getSendObject()));
     player.socket.emit("bridges", this.bridges.map((bridge) => bridge.getSendObject()));
+
+    // this.islands.forEach((island) => {
+    //   player.socket.emit("islandState", island.id, island.currentwhat)
+    // });
   }
   removePlayer(id) {
     var ioinstance = io.getio();

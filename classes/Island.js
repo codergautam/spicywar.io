@@ -10,15 +10,41 @@ module.exports = class Island {
     this.canBeCaptured = canBeCaptured;
     this.capturedBy = "none";
     this.captureState = 0;
+    
     this.destroyingBy = "none";
     // state 0 = not capturing
     // state 1 = capturing
     // state 2 = captured
     // state 4 = destroying
-    this.capturingBy = 0.1;
+    this.capturingBy = "none";
     this.lastPepperGrew = Date.now();
     this.id = idgen();
     this.capturedPercentage = 0;
+   
+
+    this.lastSendWhat = {
+      state: this.captureState,
+      capturedBy: this.capturedBy,
+      capturingBy: this.capturingBy,
+      dir: 0,
+    }
+
+    this.currentwhat = {
+      state: this.captureState,
+      capturedBy: this.capturedBy,
+      capturingBy: this.capturingBy,
+      dir: 0,
+    }
+  }
+
+  check() {
+    for (var key of Object.keys(this.currentwhat)) {
+      if(this.currentwhat[key] != this.lastSendWhat[key]) {
+        this.lastSendWhat[key] = this.currentwhat[key];
+        return false;
+      }
+    }
+    return true;
   }
   pepperGrew(room) {
     this.lastPepperGrew = Date.now();
@@ -61,6 +87,7 @@ module.exports = class Island {
       capturedPercentage: this.capturedPercentage,
       capturingBy: this.capturingBy,
       people: this.people,
+      currentwhat: this.currentwhat
     }
   }
   tick(diff, room) {
@@ -68,15 +95,27 @@ module.exports = class Island {
 
     var players = Array.from(room.players.values()).filter(player => this.isIn(player.pos));
     this.people = players.map(player => player.id);
-    io.getio().to(room.id).emit("islandUpdate", this.getSendObject());
     if(this.lastPepperGrew + 1000 < Date.now()) this.pepperGrew(room);
+
+    this.currentwhat.state = this.captureState;
+    this.currentwhat.capturedBy = this.capturedBy;
+    this.currentwhat.capturingBy = this.capturingBy;
+
+    if(!this.check()) {
+      io.getio().to(room.id).emit("islandState", this.id, this.currentwhat, this.capturedPercentage);
+      console.log("islandState", this.currentwhat);
+      this.lastSendWhat = JSON.parse(JSON.stringify(this.currentwhat));
+    }
 
     if(players.length < 1) {
       
       if(this.captureState == 1) {
         this.capturedPercentage -= (diff / 50);
+    this.currentwhat.dir = -1;
+
         if(this.capturedPercentage <= 0) {
           this.captureState = 0;
+          this.currentwhat.dir = 0;
           this.capturedPercentage = 0;
           this.capturedBy = "none";
           this.capturingBy = "none";
@@ -85,8 +124,12 @@ module.exports = class Island {
 
       if(this.captureState == 4) {
         this.capturedPercentage += (diff / 50);
+    this.currentwhat.dir = 1;
+
         if(this.capturedPercentage >= 100) {
           this.capturedBy = this.capturingBy;
+          this.currentwhat.dir = 0;
+
           this.captureState = 2;
           this.clearOtherPeppers(room);
         }
@@ -96,7 +139,8 @@ module.exports = class Island {
 
     //make sure everyone on the island is on the same team
     if(!players.every((player) => player.team == players[0].team)) {
-      return;
+          this.currentwhat.dir = 0;
+          return;
     }
 
     var team = players[0].team;
@@ -110,19 +154,29 @@ module.exports = class Island {
     if(this.captureState == 1) {
       if (this.capturingBy == team) {
       this.capturedPercentage += (diff / 50) * count;
+    this.currentwhat.dir = count;
+
       if(this.capturedPercentage >= 100) {
         this.captureState = 2;
         this.clearOtherPeppers(room);
         this.capturedBy = team;
+        this.currentwhat.dir = 0;
+
         this.capturingBy = team;
         this.capturedPercentage = 100;
       }
     }  else {
       this.capturedPercentage -= (diff / 50) * count;
+    this.currentwhat.dir = -1*count;
+
       if(this.capturedPercentage <= 0) {
         this.captureState = 0;
+        this.currentwhat.dir = 0;
+
         this.capturedPercentage = 0;
         this.capturedBy = "none";
+        this.currentwhat.dir = 0;
+        
         this.capturingBy = "none";
       }
     }
@@ -131,14 +185,19 @@ module.exports = class Island {
     if(this.captureState == 2 && this.capturedBy != team) {
       this.captureState = 4;
       this.capturedBy = "none";
+      this.currentwhat.dir = 0;
+
       this.destroyingBy = team;
     }
 
     if(this.captureState == 4) {
      if(this.destroyingBy == team) {
       this.capturedPercentage -= (diff / 50) * count;
+    this.currentwhat.dir = -1*count;
       if(this.capturedPercentage <= 0) {
         this.captureState = 0;
+        this.currentwhat.dir = 0;
+
         this.capturedBy = "none";
         this.capturingBy = "none";
         this.capturedPercentage = 0;
@@ -146,11 +205,15 @@ module.exports = class Island {
      }
      else {
       this.capturedPercentage += (diff / 50) * count;
+    this.currentwhat.dir = count;
+
       if(this.capturedPercentage >= 100) {
         this.captureState = 2;
         this.clearOtherPeppers(room);
         this.capturedBy = team;
         this.capturingBy = team;
+        this.currentwhat.dir = 0;
+
         this.capturedPercentage = 100;
       }
      }
