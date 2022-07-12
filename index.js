@@ -53,6 +53,7 @@ app.get("/teams", (req, res) => {
 })
 
 io.on("connection", async (socket) => {
+  console.log("fghfggh")
   socket.on("go", (name, team, mouseMove, thetoken) => {
     if(!name || typeof name != "string") return;
     name = name.trim();
